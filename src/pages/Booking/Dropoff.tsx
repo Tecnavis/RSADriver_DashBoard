@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
-import { GoogleMap, Marker, DirectionsRenderer } from '@react-google-maps/api';
+import { GoogleMap, Marker as AdvancedMarkerElement, DirectionsRenderer } from '@react-google-maps/api';
 
 const Dropoff = () => {
   const location = useLocation();
@@ -151,8 +151,8 @@ const Dropoff = () => {
             </>
           )}
           <GoogleMap mapContainerStyle={containerStyle} center={currentLocation || { lat: 0, lng: 0 }} zoom={15}>
-            <Marker position={currentLocation} />
-            {dropoffLocation && <Marker position={dropoffLocation} />}
+            <AdvancedMarkerElement position={currentLocation} />
+            {dropoffLocation && <AdvancedMarkerElement position={dropoffLocation} />}
             {directions && <DirectionsRenderer directions={directions} />}
           </GoogleMap>
           <div>

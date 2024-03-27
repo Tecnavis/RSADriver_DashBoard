@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
-import { GoogleMap, Marker, DirectionsRenderer } from '@react-google-maps/api';
+import { GoogleMap, Marker as AdvancedMarkerElement, DirectionsRenderer } from '@react-google-maps/api';
 
 const Pickup = () => {
   const location = useLocation();
@@ -142,7 +142,7 @@ console.log("T8ky",id)
         <p>Loading current location...</p>
       ) : currentLocation ? (
         <>
-          <p>ID: {id}</p>
+          {/* <p>ID: {id}</p> */}
           <p>Current Location: {currentLocation.lat}, {currentLocation.lng}</p>
           {pickupLocation && (
             <>
@@ -151,8 +151,8 @@ console.log("T8ky",id)
             </>
           )}
           <GoogleMap mapContainerStyle={containerStyle} center={currentLocation || { lat: 0, lng: 0 }} zoom={15}>
-            <Marker position={currentLocation} />
-            {pickupLocation && <Marker position={pickupLocation} />}
+            <AdvancedMarkerElement position={currentLocation} />
+            {pickupLocation && <AdvancedMarkerElement position={pickupLocation} />}
             {directions && <DirectionsRenderer directions={directions} />}
           </GoogleMap>
           <div>         <button className='btn' onClick={openGoogleMaps}>Navigate to Pickup Location</button></div> 

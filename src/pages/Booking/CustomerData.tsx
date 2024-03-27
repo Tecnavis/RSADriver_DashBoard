@@ -123,84 +123,128 @@ const handleSubmit = async () => {
     <div style={{marginTop:"30px", marginLeft: "100px", marginRight: "100px", marginBottom: "100px", display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#fff', padding: '20px', borderRadius: '5px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.5)'}}>
         <div style={{ marginBottom: '1rem' }}>
             <label style={{ fontSize: '1.2rem', marginRight: '0.5rem' }}>Customer Name:</label>
-            <input type="text" value={customerName} onChange={handleCustomerNameChange} style={{ padding: '0.5rem', fontSize: '1rem' }} />
-        </div>
+            <input
+      type="text"
+      value={customerName}
+      onChange={handleCustomerNameChange}
+      style={{
+        padding: '0.5rem',
+        fontSize: '1rem',
+        width: '100%', // Ensure the text field takes up the full width
+        maxWidth: '20rem', // Limit the maximum width to maintain readability
+        margin: '0 auto', // Center the text field horizontally
+        boxSizing: 'border-box', // Ensure padding and border are included in the width
+      }}
+    />        </div>
         <div style={{ marginBottom: '1rem' }}>
             <label style={{ fontSize: '1.2rem', marginRight: '1.5rem' }}>Email:</label>
-            <input type="email" value={email} onChange={handleEmailChange} style={{ padding: '0.5rem', fontSize: '1rem' }} />
-        </div>
+            <input
+      type="email"
+      value={email}
+      onChange={handleEmailChange}
+      style={{
+        padding: '0.5rem',
+        fontSize: '1rem',
+        width: '100%',
+        maxWidth: '20rem',
+        margin: '0 auto', 
+        boxSizing: 'border-box',
+      }}
+    />        </div>
         <div style={{ marginBottom: '1rem' }}>
             <label style={{ fontSize: '1.2rem', marginRight: '0.5rem' }}>Phone:</label>
-            <input type="tel" value={phone} onChange={handlePhoneChange} style={{ padding: '0.5rem', fontSize: '1rem' }} />
-        </div>
+            <input
+      type="tel"
+      value={phone}
+      onChange={handlePhoneChange}
+      style={{
+        padding: '0.5rem',
+        fontSize: '1rem',
+        width: '100%', // Ensure the input takes up the full width
+        maxWidth: '20rem', // Limit the maximum width to maintain readability
+        margin: '0 auto', // Center the input horizontally
+        boxSizing: 'border-box', // Include padding and border in the width
+      }}
+    />        </div>
         <div style={{ marginBottom: '1rem' }}>
             <label style={{ fontSize: '1.2rem', marginRight: '1.5rem' }}>Vehicle Number:</label>
-            <input type="text" value={vehicleNumber} onChange={handleVehicleNumberChange} style={{ padding: '0.5rem', fontSize: '1rem' }} />
-        </div>
-        <label style={{ fontSize: '1.2rem', marginRight: '1.5rem' }}>Upload RC Book Images:</label>
-                <ImageUploading
-                    multiple={true}
-                    value={rcBookImages}
-                    onChange={handleRcBookImagesChange}
-                    maxNumber={maxNumber}
-                    dataURLKey="dataURL" // specify dataURL key for dataURL
+  <input
+      type="text"
+      value={vehicleNumber}
+      onChange={handleVehicleNumberChange}
+      style={{
+        padding: '0.5rem',
+        fontSize: '1rem',
+        width: '100%', // Ensure the input takes up the full width
+        maxWidth: '20rem', // Limit the maximum width to maintain readability
+        margin: '0 auto', // Center the input horizontally
+        boxSizing: 'border-box', // Include padding and border in the width
+      }}
+    />        </div>
+         <label style={{ fontSize: '1.2rem', marginRight: '1.5rem' }}>Upload RC Book Images:</label>
+    <ImageUploading
+        multiple={true}
+        value={rcBookImages}
+        onChange={handleRcBookImagesChange}
+        maxNumber={maxNumber}
+        dataURLKey="dataURL" 
+    >
+        {({ imageList, onImageUpload, onImageRemove }) => (
+            <div>
+                <button
+                    style={{ padding: '0.5rem 1rem', fontSize: '1rem', borderRadius: '0.5rem', backgroundColor: '#007bff', color: '#fff', border: 'none', marginBottom: '0.5rem' }}
+                    onClick={onImageUpload}
                 >
-                    {({ imageList, onImageUpload, onImageRemove }) => (
-                        <div>
-                            <button
-                                style={{ padding: '0.5rem 1rem', fontSize: '1rem', borderRadius: '0.5rem', backgroundColor: '#007bff', color: '#fff', border: 'none', marginBottom: '0.5rem' }}
-                                onClick={onImageUpload}
-                            >
-                                Upload RC Book Images
-                            </button>
-                            {imageList.map((image, index) => (
-    <div key={index} style={{ marginBottom: '0.5rem' }}>
-        <img src={image.dataURL} alt={`RC Book Image ${index}`} style={{ maxWidth: '200px', maxHeight: '200px' }} />
-        <button
-            style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem', borderRadius: '0.5rem', backgroundColor: 'red', color: '#fff', border: 'none', marginLeft: '0.5rem', cursor: 'pointer' }}
-            onClick={() => {
-                console.log("Removing image at index:", index);
-                onImageRemove(index);
-            }}
-        >
-            Remove
-        </button>
-    </div>
-))}
-                        </div>
-                    )}
-                </ImageUploading>
+                    Upload RC Book Images
+                </button>
+                {imageList.map((image, index) => (
+                    <div key={index} style={{ marginBottom: '0.5rem' }}>
+                        <img src={image.dataURL} alt={`RC Book Image ${index}`} style={{ maxWidth: '100%', height: 'auto' }} />
+                        <button
+                            style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem', borderRadius: '0.5rem', backgroundColor: 'red', color: '#fff', border: 'none', marginLeft: '0.5rem', cursor: 'pointer' }}
+                            onClick={() => {
+                                console.log("Removing image at index:", index);
+                                onImageRemove(index);
+                            }}
+                        >
+                            Remove
+                        </button>
+                    </div>
+                ))}
+            </div>
+        )}
+    </ImageUploading>
 
-                <label style={{ fontSize: '1.2rem', marginRight: '1.5rem' }}>Upload Vehicle Images:</label>
-                <ImageUploading
-                    multiple={true}
-                    value={vehicleImages}
-                    onChange={handleVehicleImagesChange}
-                    maxNumber={maxNumber}
-                    dataURLKey="dataURL" // specify dataURL key for dataURL
+    <label style={{ fontSize: '1.2rem', marginRight: '1.5rem', marginTop: '1rem' }}>Upload Vehicle Images:</label>
+    <ImageUploading
+        multiple={true}
+        value={vehicleImages}
+        onChange={handleVehicleImagesChange}
+        maxNumber={maxNumber}
+        dataURLKey="dataURL" // specify dataURL key for dataURL
+    >
+        {({ imageList, onImageUpload, onImageRemove }) => (
+            <div>
+                <button
+                    style={{ padding: '0.5rem 1rem', fontSize: '1rem', borderRadius: '0.5rem', backgroundColor: '#007bff', color: '#fff', border: 'none', marginBottom: '0.5rem' }}
+                    onClick={onImageUpload}
                 >
-                    {({ imageList, onImageUpload, onImageRemove }) => (
-                        <div>
-                            <button
-                                style={{ padding: '0.5rem 1rem', fontSize: '1rem', borderRadius: '0.5rem', backgroundColor: '#007bff', color: '#fff', border: 'none', marginBottom: '0.5rem' }}
-                                onClick={onImageUpload}
-                            >
-                                Upload Vehicle Images
-                            </button>
-                            {imageList.map((image, index) => (
-                                <div key={index} style={{ marginBottom: '0.5rem' }}>
-                                    <img src={image.dataURL} alt={`Vehicle Image ${index}`} style={{ maxWidth: '200px', maxHeight: '200px' }} />
-                                    <button
-                                        style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem', borderRadius: '0.5rem', backgroundColor: 'red', color: '#fff', border: 'none', marginLeft: '0.5rem', cursor: 'pointer' }}
-                                        onClick={() => onImageRemove(index)}
-                                    >
-                                        Remove
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </ImageUploading>
+                    Upload Vehicle Images
+                </button>
+                {imageList.map((image, index) => (
+                    <div key={index} style={{ marginBottom: '0.5rem' }}>
+                        <img src={image.dataURL} alt={`Vehicle Image ${index}`} style={{ maxWidth: '100%', height: 'auto' }} />
+                     <button
+                            style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem', borderRadius: '0.5rem', backgroundColor: 'red', color: '#fff', border: 'none', marginLeft: '0.5rem', cursor: 'pointer' }}
+                            onClick={() => onImageRemove(index)}
+                        >
+                            Remove
+                        </button>  
+                    </div>
+                ))}
+            </div>
+        )}
+    </ImageUploading>
                 <button style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', borderRadius: '0.5rem', backgroundColor: '#28a745', color: '#fff', border: 'none', cursor: 'pointer', marginTop: '1rem' }} onClick={handleSubmit}>Submit</button>
     </div>
 </div>
