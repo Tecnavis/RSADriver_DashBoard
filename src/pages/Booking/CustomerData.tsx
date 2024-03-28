@@ -113,29 +113,40 @@ const handleSubmit = async () => {
     }
 };
 
+const inputStyle = {
+    padding: '0.5rem',
+    fontSize: '1rem',
+    width: '100%',
+    maxWidth: '20rem',
+    margin: '0 auto',
+    boxSizing: 'border-box',
+};
+
+const buttonStyle = {
+    padding: '0.75rem 1.5rem',
+    fontSize: '1rem',
+    borderRadius: '0.5rem',
+    backgroundColor: '#28a745',
+    color: '#fff',
+    border: 'none',
+    cursor: 'pointer',
+};
 
 
     return (
         <div style={{ textAlign: 'center' }}>
-    <h1 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Customer Data</h1>
-    {/* <div className="modal" style={{, backgroundColor: '#fff', padding: '20px', borderRadius: '5px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.5)', width: '700px', maxHeight: '80vh', overflowY: 'auto' }}> */}
-
-    <div style={{marginTop:"30px", marginLeft: "100px", marginRight: "100px", marginBottom: "100px", display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#fff', padding: '20px', borderRadius: '5px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.5)'}}>
-        <div style={{ marginBottom: '1rem' }}>
-            <label style={{ fontSize: '1.2rem', marginRight: '0.5rem' }}>Customer Name:</label>
-            <input
-      type="text"
-      value={customerName}
-      onChange={handleCustomerNameChange}
-      style={{
-        padding: '0.5rem',
-        fontSize: '1rem',
-        width: '100%', // Ensure the text field takes up the full width
-        maxWidth: '20rem', // Limit the maximum width to maintain readability
-        margin: '0 auto', // Center the text field horizontally
-        boxSizing: 'border-box', // Ensure padding and border are included in the width
-      }}
-    />        </div>
+        <h1 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Customer Data</h1>
+        <div style={{ margin: "30px auto", maxWidth: "700px", width: "90%", padding: '20px', borderRadius: '5px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.5)' }}>
+            <div style={{ marginBottom: '1rem' }}>
+                <label style={{ fontSize: '1.2rem', marginRight: '0.5rem' }}>Customer Name:</label>
+                <input
+                    type="text"
+                    value={customerName}
+                    onChange={handleCustomerNameChange}
+                    style={inputStyle}
+                />
+            </div>
+    
         <div style={{ marginBottom: '1rem' }}>
             <label style={{ fontSize: '1.2rem', marginRight: '1.5rem' }}>Email:</label>
             <input
@@ -175,10 +186,10 @@ const handleSubmit = async () => {
       style={{
         padding: '0.5rem',
         fontSize: '1rem',
-        width: '100%', // Ensure the input takes up the full width
-        maxWidth: '20rem', // Limit the maximum width to maintain readability
-        margin: '0 auto', // Center the input horizontally
-        boxSizing: 'border-box', // Include padding and border in the width
+        width: '100%', 
+        maxWidth: '20rem',
+        margin: '0 auto', 
+        boxSizing: 'border-box', 
       }}
     />        </div>
          <label style={{ fontSize: '1.2rem', marginRight: '1.5rem' }}>Upload RC Book Images:</label>
@@ -221,7 +232,7 @@ const handleSubmit = async () => {
         value={vehicleImages}
         onChange={handleVehicleImagesChange}
         maxNumber={maxNumber}
-        dataURLKey="dataURL" // specify dataURL key for dataURL
+        dataURLKey="dataURL" 
     >
         {({ imageList, onImageUpload, onImageRemove }) => (
             <div>
@@ -245,7 +256,7 @@ const handleSubmit = async () => {
             </div>
         )}
     </ImageUploading>
-                <button style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', borderRadius: '0.5rem', backgroundColor: '#28a745', color: '#fff', border: 'none', cursor: 'pointer', marginTop: '1rem' }} onClick={handleSubmit}>Submit</button>
+    <button style={{ ...buttonStyle, marginTop: '1rem' }} onClick={handleSubmit}>Submit</button>
     </div>
 </div>
     );

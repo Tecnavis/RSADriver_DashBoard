@@ -94,12 +94,12 @@ console.log("auth",auth)
                                         </span>
                                     </div>
                                 </div>
-                                <div>
+                                {/* <div>
                                     <label className="flex cursor-pointer items-center">
                                         <input type="checkbox" className="form-checkbox bg-white dark:bg-black" />
                                         <span className="text-white-dark">Subscribe to weekly newsletter</span>
                                     </label>
-                                </div>
+                                </div> */}
                                 <button
   type="submit"
   className="btn !mt-6 w-full border-0 uppercase text-white shadow-[0_10px_20px_-10px_rgba(255, 0, 0, 0.44)]"
@@ -165,7 +165,7 @@ console.log("auth",auth)
                                 </Link>
                             </div>
                         </div>
-                        <p className="absolute bottom-6 w-full text-center dark:text-white">© {new Date().getFullYear()}.VRISTO All Rights Reserved.</p>
+                        <p className="absolute bottom-6 w-full text-center dark:text-white">© {new Date().getFullYear()}.Tecnavis All Rights Reserved.</p>
                     </div>
                 </div>
             </div>

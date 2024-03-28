@@ -20,10 +20,9 @@ const LoginCover = () => {
         const auth = getAuth();
         signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
-                // Signed in successfully
                 const user = userCredential.user;
                 console.log("User signed in:", user);
-                navigate('/index'); // Redirect to home page or any other route
+                navigate('/index');
             })
             .catch((error) => {
                 const errorCode = error.code;
@@ -62,12 +61,12 @@ console.log(auth?.currentUser)
                         </div>
                     </div>
                     <div className="relative flex w-full flex-col items-center justify-center gap-6 px-4 pb-16 pt-6 sm:px-6 lg:max-w-[667px]">
-                        <div className="flex w-full max-w-[440px] items-center gap-2 lg:absolute lg:end-6 lg:top-6 lg:max-w-full">
+                        {/* <div className="flex w-full max-w-[440px] items-center gap-2 lg:absolute lg:end-6 lg:top-6 lg:max-w-full">
                             <Link to="/" className="w-8 block lg:hidden">
                                 <img src="/assets/images/logo.svg" alt="Logo" className="mx-auto w-10" />
                             </Link>
                          
-                        </div>
+                        </div> */}
                         <div className="w-full max-w-[440px] lg:mt-16">
                             <div className="mb-10">
                                 <h1 className="text-3xl font-extrabold uppercase !leading-snug text-danger md:text-4xl">Sign in</h1>
@@ -92,12 +91,12 @@ console.log(auth?.currentUser)
                                         </span>
                                     </div>
                                 </div>
-                                <div>
+                                {/* <div>
                                     <label className="flex cursor-pointer items-center">
                                         <input type="checkbox" className="form-checkbox bg-white dark:bg-black" />
                                         <span className="text-white-dark">Subscribe to weekly newsletter</span>
                                     </label>
-                                </div>
+                                </div> */}
                                 <button
   type="submit"
   className="btn !mt-6 w-full border-0 uppercase text-white shadow-[0_10px_20px_-10px_rgba(255, 0, 0, 0.44)]"
@@ -164,7 +163,7 @@ console.log(auth?.currentUser)
                                 </Link>
                             </div>
                         </div>
-                        <p className="absolute bottom-6 w-full text-center dark:text-white">© {new Date().getFullYear()}.VRISTO All Rights Reserved.</p>
+                        <p className="absolute bottom-6 w-full text-center dark:text-white">© {new Date().getFullYear()}.Tecnavis All Rights Reserved.</p>
                     </div>
                 </div>
             </div>
