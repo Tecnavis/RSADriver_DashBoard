@@ -67,6 +67,8 @@ const CustomerVerification = () => {
             setShowMessage(true);
             setTimeout(() => {
               setShowMessage(false);
+              navigate('/index'); // Replace '/' with the path to your Index.tsx
+
             }, 3000);
         } catch (error) {
             console.error('Error adding document: ', error);
