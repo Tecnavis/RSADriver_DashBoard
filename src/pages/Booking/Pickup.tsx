@@ -2,22 +2,43 @@
 
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, addDoc, collection } from 'firebase/firestore';
 import { GoogleMap, Marker as AdvancedMarkerElement, DirectionsRenderer } from '@react-google-maps/api';
 
 const Pickup = () => {
   const location = useLocation();
   const { state } = location;
   const { id } = state || {};
+  const [showModal, setShowModal] = useState(false); // State for controlling modal visibility
   const [pickupLocation, setPickupLocation] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [loadingLocation, setLoadingLocation] = useState(true);
   const [directions, setDirections] = useState(null);
   const [distance, setDistance] = useState(null);
+  const [kilometer, setKilometer] = useState(''); // Define kilometer state
+  const [photo, setPhoto] = useState(null); // Initialize photo state variable
+
   const navigate = useNavigate();
 console.log("T8ky",id)
   const db = getFirestore();
-
+  const handleModalClose = () => {
+    setShowModal(false);
+  };
+  const handleSubmit = () => {
+    addDoc(collection(db, 'driverdropoff'), {
+      photo,
+      kilometer,
+    }).then((docRef) => {
+      navigate(`/customerdata/${docRef.id}`, {
+        state: {
+          id: id,
+        }
+      });
+    }).catch((error) => {
+      console.error('Error adding document: ', error);
+    });
+  };
+  
   useEffect(() => {
     const geolocationOptions = {
       enableHighAccuracy: true, // High accuracy mode
@@ -106,15 +127,11 @@ console.log("T8ky",id)
         );
         if (distance < 100) {
           alert('Reached destination!');
-
-          navigate(`/customerdata/${id}`, {
-            state:{
-              id,
-            }
-          });
-          // window.location.href = '/customerdata';
+          // Show the modal
+          setShowModal(true);
+          // Stop checking for destination
+          clearInterval(intervalId);
         }
-
       }
     };
 
@@ -161,6 +178,48 @@ console.log("T8ky",id)
       ) : (
         <p>Current location not available.</p>
       )}
+     {showModal && (
+  <div className="modal" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', backgroundColor: '#fff', padding: '20px', borderRadius: '5px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.5)', maxWidth: '90%', maxHeight: '90%', overflowY: 'auto', width: '700px', }}>
+    <form>
+      <div className="mb-4">
+        <label htmlFor="kilometer" className="block text-sm font-medium text-gray-700">
+          Kilometer
+        </label>
+        <input
+          type="text"
+          id="kilometer"
+          name="kilometer"
+          placeholder='Enter KM'
+          value={kilometer}
+          onChange={(e) => setKilometer(e.target.value)}
+          className="mt-1 p-2 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+        />
+      </div>
+      <div className="mb-4">
+        <label htmlFor="photo" className="block text-sm font-medium text-gray-700">
+          Photo
+        </label>
+        <input
+          type="file"
+          id="photo"
+          name="photo"
+          accept="image/*"
+          capture="camera" 
+          onChange={(e) => setPhoto(e.target.value)}
+          className="mt-1 p-2 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+        />
+      </div>
+      <div className="flex justify-end">
+        <button type="button" onClick={handleModalClose} className="btn btn-secondary mr-2">
+          Cancel
+        </button>
+        <button type="button" onClick={handleSubmit} className="btn btn-primary mr-2">
+          Submit
+        </button>
+      </div>
+    </form>
+  </div>
+)}
     </div>
   );
 };

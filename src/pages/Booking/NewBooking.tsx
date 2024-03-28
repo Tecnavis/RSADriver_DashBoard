@@ -102,7 +102,7 @@ const NewBooking = () => {
     <div>
       <div className="panel mt-6">
         <h5 className="font-semibold text-lg dark:text-white-light mb-5">New Bookings</h5>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
           {recordsData.map((booking, index) => (
             <div key={index} className="border border-gray-200 p-4 rounded-lg">
               <h2 className="text-lg font-semibold mb-2">{booking.customerName}</h2>

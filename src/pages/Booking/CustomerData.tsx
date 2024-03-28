@@ -7,6 +7,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Resizer from 'react-image-file-resizer'; // Import the image resizer library
 
 const CustomerData = () => {
+        const [showModal, setShowModal] = useState(true); // State for controlling modal visibility
+
     const [customerName, setCustomerName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');

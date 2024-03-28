@@ -104,6 +104,7 @@ const Dropoff = () => {
         );
         if (distance < 100) {
           alert('Reached destination!');
+          clearInterval(intervalId);
 
           navigate(`/customerverification/${id}`, {
             state:{
@@ -142,7 +143,7 @@ const Dropoff = () => {
         <p>Loading current location...</p>
       ) : currentLocation ? (
         <>
-          <p>ID: {id}</p>
+          {/* <p>ID: {id}</p> */}
           <p>Current Location: {currentLocation.lat}, {currentLocation.lng}</p>
           {dropoffLocation && (
             <>
