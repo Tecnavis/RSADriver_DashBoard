@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { getFirestore, doc, getDoc, addDoc, collection } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, addDoc, collection, updateDoc } from 'firebase/firestore';
 import { GoogleMap, Marker as AdvancedMarkerElement, DirectionsRenderer } from '@react-google-maps/api';
+import { googleMapsApiKey } from '../../config/config';
 
 const Pickup = () => {
   const location = useLocation();
@@ -13,46 +14,108 @@ const Pickup = () => {
   const [pickupLocation, setPickupLocation] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [loadingLocation, setLoadingLocation] = useState(true);
+  const [currentLocationName, setCurrentLocationName] = useState('');
+
   const [directions, setDirections] = useState(null);
   const [distance, setDistance] = useState(null);
   const [kilometer, setKilometer] = useState(''); // Define kilometer state
-  const [photo, setPhoto] = useState(null); // Initialize photo state variable
-
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [status, setStatus] = useState(''); // Define status state variable
+  const [errors, setErrors] = useState<{ kilometer?: string; photo?: string }>({});
   const navigate = useNavigate();
 console.log("T8ky",id)
+console.log("status",status)
+
   const db = getFirestore();
   const handleModalClose = () => {
     setShowModal(false);
+    setKilometer('');
+    setPhoto(null);
+    setErrors({});
   };
-  const handleSubmit = () => {
-    addDoc(collection(db, 'driverdropoff'), {
-      photo,
-      kilometer,
-    }).then((docRef) => {
-      navigate(`/customerdata/${docRef.id}`, {
-        state: {
-          id: id,
-        }
-      });
-    }).catch((error) => {
-      console.error('Error adding document: ', error);
-    });
+  const loadGoogleMapsScript = () => {
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&callback=initMap`;
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+  
+    // Optional: Cleanup the script when the component unmounts
+    return () => {
+      document.head.removeChild(script);
+    };
   };
   
   useEffect(() => {
+    loadGoogleMapsScript();
+  }, []); // Empty dependency array to run only once on mount
+  const handleSubmit = async () => {
+    let validationErrors: { kilometer?: string; photo?: string } = {};
+
+    if (!kilometer) {
+      validationErrors.kilometer = 'Kilometer is required';
+    }
+    if (!photo) {
+      validationErrors.photo = 'Photo is required';
+    }
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+    try {
+        // Add document to the 'driverdropoff' collection
+        const docRef = await addDoc(collection(db, 'driverpickup'), {
+            photo,
+            kilometer,
+        });
+        
+        // Update the status to "Vehicle Picked" in the database
+        await updateDoc(doc(db, 'bookings', id), {
+            status: 'Vehicle Picked'
+        });
+
+        // Navigate to the new route
+        navigate(`/customerdata/${docRef.id}`, {
+            state: {
+                id: id,
+            }
+        });
+    } catch (error) {
+        console.error('Error adding document: ', error);
+    }
+};
+
+  
+  useEffect(() => {
     const geolocationOptions = {
-      enableHighAccuracy: true, // High accuracy mode
-      timeout: 10000, // Timeout after 10 seconds
-      maximumAge: 0 // No cache
+      enableHighAccuracy: true,
+      timeout: 10000, 
+      maximumAge: 0 
     };
 
     const getCurrentLocation = () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-          (position) => {
+          async (position) => {
             const { latitude, longitude } = position.coords;
             setCurrentLocation({ lat: latitude, lng: longitude });
             setLoadingLocation(false);
+    
+            // Fetch location name using geocoding
+            fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${googleMapsApiKey}`)
+              .then(response => response.json())
+              .then(data => {
+                if (data.results && data.results.length > 0) {
+                  setCurrentLocationName(data.results[0].formatted_address);
+                } else {
+                  console.log('No address found');
+                }
+              })
+              .catch(error => {
+                console.error('Error fetching location name:', error);
+              });
+    
           },
           (error) => {
             console.error('Error getting current location:', error);
@@ -65,7 +128,7 @@ console.log("T8ky",id)
         setLoadingLocation(false);
       }
     };
-
+    
     getCurrentLocation();
   }, []);
 
@@ -118,39 +181,79 @@ console.log("T8ky",id)
   }, [currentLocation, pickupLocation]);
 
   useEffect(() => {
-    const checkReachedDestination = () => {
-      if (currentLocation && pickupLocation) {
-        const google = window.google;
-        const distance = google.maps.geometry.spherical.computeDistanceBetween(
-          new google.maps.LatLng(currentLocation.lat, currentLocation.lng),
-          new google.maps.LatLng(pickupLocation.lat, pickupLocation.lng)
-        );
-        if (distance < 100) {
-          alert('Reached destination!');
-          // Show the modal
-          setShowModal(true);
-          // Stop checking for destination
-          clearInterval(intervalId);
+    const checkReachedDestination = async () => {
+        if (currentLocation && pickupLocation) {
+            const google = window.google;
+            const distance = google.maps.geometry.spherical.computeDistanceBetween(
+                new google.maps.LatLng(currentLocation.lat, currentLocation.lng),
+                new google.maps.LatLng(pickupLocation.lat, pickupLocation.lng)
+            );
+            if (distance < 100) {
+                // Update the status to "Vehicle Confirmed" in the database
+                try {
+                    await updateDoc(doc(db, 'bookings', id), {
+                        status: 'Vehicle Confirmed'
+                    });
+                } catch (error) {
+                    console.error('Error updating status:', error);
+                }
+                alert('Reached destination!');
+                // Show the modal
+                setShowModal(true);
+                setErrors({});
+                clearInterval(intervalId);
+            }
         }
-      }
     };
 
     const intervalId = setInterval(checkReachedDestination, 1000);
 
     return () => clearInterval(intervalId);
-  }, [currentLocation, pickupLocation]);
+}, [currentLocation, pickupLocation]);
+
 
   const containerStyle = {
     width: '100%',
     height: '400px'
   };
   // Function to open Google Maps in a new tab with the pickup location
-  const openGoogleMaps = () => {
+  const openGoogleMaps = async () => {
     if (pickupLocation) {
-      const url = `https://www.google.com/maps/search/?api=1&query=${pickupLocation.lat},${pickupLocation.lng}`;
-      window.open(url, '_blank');
+        const url = `https://www.google.com/maps/search/?api=1&query=${pickupLocation.lat},${pickupLocation.lng}`;
+        window.open(url, '_blank');
+
+        // Update the status to "On the way to pickup location" in the database
+        try {
+            await updateDoc(doc(db, 'bookings', id), {
+                status: 'On the way to pickup location'
+            });
+        } catch (error) {
+            console.error('Error updating status:', error);
+        }
+    }
+};
+
+useEffect(() => {
+  const fetchBookingStatus = async () => {
+    try {
+      const bookingDocRef = doc(db, 'bookings', id);
+      const bookingSnapshot = await getDoc(bookingDocRef);
+      if (bookingSnapshot.exists()) {
+        const data = bookingSnapshot.data();
+        setStatus(data.status); // Set the status state variable
+      } else {
+        console.log('No such document!');
+      }
+    } catch (error) {
+      console.error('Error fetching document: ', error);
     }
   };
+
+  if (id) {
+    fetchBookingStatus();
+  }
+}, [id, db]);
+
   return (
     <div>
       <h1>Pickup Details</h1>
@@ -160,10 +263,10 @@ console.log("T8ky",id)
       ) : currentLocation ? (
         <>
           {/* <p>ID: {id}</p> */}
-          <p>Current Location: {currentLocation.lat}, {currentLocation.lng}</p>
+          <p>Current Location: {currentLocationName}</p>
           {pickupLocation && (
             <>
-              <p>Pickup Location: {pickupLocation.lat}, {pickupLocation.lng}</p>
+              <p>Pickup Location: {pickupLocation.name}</p>
               <p>Distance: {distance}</p>
             </>
           )}
@@ -179,7 +282,7 @@ console.log("T8ky",id)
         <p>Current location not available.</p>
       )}
      {showModal && (
-  <div className="modal" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', backgroundColor: '#fff', padding: '20px', borderRadius: '5px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.5)', maxWidth: '90%', maxHeight: '90%', overflowY: 'auto', width: '700px', }}>
+  <div className="modal" style={{ position: 'fixed', top: '50%', left: '55%', transform: 'translate(-50%, -50%)', backgroundColor: '#fff', padding: '20px', borderRadius: '5px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.5)', maxWidth: '90%', maxHeight: '90%', overflowY: 'auto', width: '700px', }}>
     <form>
       <div className="mb-4">
         <label htmlFor="kilometer" className="block text-sm font-medium text-gray-700">
@@ -194,6 +297,8 @@ console.log("T8ky",id)
           onChange={(e) => setKilometer(e.target.value)}
           className="mt-1 p-2 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
         />
+                        {errors.kilometer && <p className="text-red-500 text-xs italic">{errors.kilometer}</p>}
+
       </div>
       <div className="mb-4">
         <label htmlFor="photo" className="block text-sm font-medium text-gray-700">
@@ -208,6 +313,8 @@ console.log("T8ky",id)
           onChange={(e) => setPhoto(e.target.value)}
           className="mt-1 p-2 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
         />
+                        {errors.photo && <p className="text-red-500 text-xs italic">{errors.photo}</p>}
+
       </div>
       <div className="flex justify-end">
         <button type="button" onClick={handleModalClose} className="btn btn-secondary mr-2">

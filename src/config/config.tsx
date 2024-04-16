@@ -13,12 +13,14 @@ const firebaseConfig = {
   messagingSenderId: "751667160757",
   appId: "1:751667160757:web:6eac73e5039f3249ff00fc"
 };
+const googleMapsApiKey: string = 'AIzaSyAYfaaoi24oJl8dJLTqigiobeRhCpDJ8Oc';
 
 // Initialize Firebase
 const app = firebase.initializeApp(firebaseConfig);
 
 // Get the authentication instance
 const auth = getAuth(app);
+export { googleMapsApiKey };
 
 export { auth };
 export default app;
