@@ -111,6 +111,7 @@ const CustomerData = () => {
         return resizedImages;
     };
 
+
     const handleSubmit = async () => {
         if (validateForm()) {
             try {
@@ -118,24 +119,24 @@ const CustomerData = () => {
                 const resizedRcBookImages = await resizeImages(rcBookImages);
                 // Resize Vehicle Images
                 const resizedVehicleImages = await resizeImages(vehicleImages);
-
+    
                 // Construct customer data object
                 const customerData = {
                     customerName,
                     email,
                     phone,
                     vehicleNumber,
-                    rcBookImageURLs: resizedRcBookImages.map((image) => image.dataURL),
-                    vehicleImageURLs: resizedVehicleImages.map((image) => image.dataURL),
+                    rcBookImageURLs: resizedRcBookImages.map(image => image.dataURL),
+                    vehicleImageURLs: resizedVehicleImages.map(image => image.dataURL),
+                    status: 'To DropOff Location' // Assuming you want to update the status as well
                 };
-
-                // Add customer data to Firestore
+    
+                // Update the booking in the Firestore
                 const db = getFirestore();
-                const docRef = await addDoc(collection(db, 'customerdata'), customerData);
-                // Update the status to "To DropOff Location" in the database
-                await updateDoc(doc(db, 'bookings', id), {
-                    status: 'To DropOff Location',
-                });
+                const bookingRef = doc(db, 'bookings', id);
+    
+                await updateDoc(bookingRef, customerData);
+    
                 // Clear form fields after successful submission
                 setCustomerName('');
                 setEmail('');
@@ -143,18 +144,19 @@ const CustomerData = () => {
                 setVehicleNumber('');
                 setRcBookImages([]);
                 setVehicleImages([]);
-
+    
                 // Navigate to Dropoff page
-                navigate(`/dropoff/${docRef.id}`, {
+                navigate(`/dropoff/${id}`, {
                     state: {
                         id,
                     },
                 });
             } catch (error) {
-                console.error('Error adding document: ', error);
+                console.error('Error updating document: ', error);
             }
         }
     };
+    
     const inputStyle = {
         padding: '0.5rem',
         fontSize: '1rem',

@@ -56,39 +56,46 @@ const CustomerVerification = () => {
             setErrorMessage('Please upload all required images before submitting.');
             return;
         }
-
+    
         setErrorMessage('');  // Clear any existing error messages
-
+    
         try {
+            // Resize images
             const resizedFuelBillImages = await resizeImages(fuelBillImages);
             const resizedVehicleImages = await resizeImages(vehicleImages);
-
-            const customerData = {
-                fuelBillImageURLs: resizedFuelBillImages.map(image => image.dataURL),
-                vehicleImageURLs: resizedVehicleImages.map(image => image.dataURL)
-            };
-
+    
+            // Extract data URLs from resized images
+            const fuelBillImageURLs = resizedFuelBillImages.map(image => image.dataURL);
+            const vehicleImgURLs = resizedVehicleImages.map(image => image.dataURL);
+    
             const db = getFirestore();
-            const docRef = await addDoc(collection(db, 'customerVerification'), customerData);
-  // Assuming 'bookingId' is available and represents the ID of the current booking
-  const bookingDocRef = doc(db, 'bookings', id);
-  await updateDoc(bookingDocRef, {
-      status: 'Order Completed'
-  });
+            
+            // Assuming 'bookingId' is available and represents the ID of the current booking
+            const bookingDocRef = doc(db, 'bookings', id);
+    
+            // Update the booking document with new image URLs
+            await updateDoc(bookingDocRef, {
+                status: 'Order Completed',
+                fuelBillImageURLs: fuelBillImageURLs,
+                vehicleImgURLs: vehicleImgURLs
+            });
+    
+            // Clear the state for images
             setFuelBillImages([]);
             setVehicleImages([]);
-
+    
+            // Show confirmation message and redirect after a delay
             setShowMessage(true);
             setTimeout(() => {
-              setShowMessage(false);
-              navigate('/index'); 
-
+                setShowMessage(false);
+                navigate('/index'); // Assuming 'navigate' is properly imported from 'react-router-dom'
             }, 3000);
         } catch (error) {
-            console.error('Error adding document: ', error);
+            console.error('Error updating booking document: ', error);
+            setErrorMessage('Failed to update booking. Please try again.');
         }
     };
-
+    
     return (
         <div>
             <h1 style={{ fontSize: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>Customer Verification</h1>

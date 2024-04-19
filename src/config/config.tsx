@@ -1,10 +1,6 @@
-// Import the functions you need from the SDKs you need
 import firebase from "firebase/compat/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 import { getAuth } from "firebase/auth";
-
-// Your web app's Firebase configuration
+import {getStorage} from "firebase/storage"
 const firebaseConfig = {
   apiKey: "AIzaSyAYfaaoi24oJl8dJLTqigiobeRhCpDJ8Oc",
   authDomain: "rsa-dashboard-34773.firebaseapp.com",
@@ -15,12 +11,10 @@ const firebaseConfig = {
 };
 const googleMapsApiKey: string = 'AIzaSyAYfaaoi24oJl8dJLTqigiobeRhCpDJ8Oc';
 
-// Initialize Firebase
 const app = firebase.initializeApp(firebaseConfig);
-
-// Get the authentication instance
+const storage = getStorage(app)
 const auth = getAuth(app);
 export { googleMapsApiKey };
 
-export { auth };
+export { auth ,storage };
 export default app;

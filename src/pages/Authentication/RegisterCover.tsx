@@ -19,16 +19,14 @@ const RegisterCover = () => {
         const auth = getAuth();
         createUserWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
-                // Signed up successfully
                 const user = userCredential.user;
                 console.log("User signed up:", user);
-                navigate('/'); // Redirect to home page or any other route
+                navigate('/'); 
             })
             .catch((error) => {
                 const errorCode = error.code;
                 const errorMessage = error.message;
                 console.error("Error signing up:", errorCode, errorMessage);
-                // Handle error appropriately (e.g., display error message to user)
             });
     };
 

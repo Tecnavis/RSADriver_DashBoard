@@ -243,7 +243,42 @@ const Sidebar = () => {
                                     </ul>
                                 </AnimateHeight>
                             </li>
+                            <h2 className="py-3 px-7 flex items-center uppercase font-extrabold bg-white-light/30 dark:bg-dark dark:bg-opacity-[0.08] -mx-4 mb-1">
+                                <IconMinus className="w-4 h-5 flex-none hidden" />
+                                <span>
+                                 Profile 
+                                    </span>
+                            </h2>
+
                            
+
+                            <li className="menu nav-item">
+                                <button type="button" className={`${currentMenu === 'profile' ? 'active' : ''} nav-link group w-full`} onClick={() => toggleMenu('profile')}>
+                                    <div className="flex items-center">
+                                        <IconMenuUsers className="group-hover:!text-primary shrink-0" />
+                                        <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">Profile</span>
+                                    </div>
+
+                                    <div className={currentMenu !== 'profile' ? 'rtl:rotate-90 -rotate-90' : ''}>
+                                        <IconCaretDown />
+                                    </div>
+                                </button>
+
+                                <AnimateHeight duration={300} height={currentMenu === 'profile' ? 'auto' : 0}>
+                                <ul className="sub-menu text-gray-500">
+                                
+                                <li>
+                                            <NavLink to="/users/user-account-settings">Profile Settings</NavLink>
+                                        </li>
+                                       
+                                         <li>
+                                            <NavLink to="/users/profile">Profile</NavLink>
+                                        </li> 
+                                    </ul>
+                                
+                                </AnimateHeight>
+                            </li>
+
                             {/* <h2 className="py-3 px-7 flex items-center uppercase font-extrabold bg-white-light/30 dark:bg-dark dark:bg-opacity-[0.08] -mx-4 mb-1">
                                 <IconMinus className="w-4 h-5 flex-none hidden" />
                                 <span>
@@ -314,71 +349,7 @@ const Sidebar = () => {
 
 
 
-                                {/* <h2 className="py-3 px-7 flex items-center uppercase font-extrabold bg-white-light/30 dark:bg-dark dark:bg-opacity-[0.08] -mx-4 mb-1">
-                                <IconMinus className="w-4 h-5 flex-none hidden" />
-                                <span>
-                                    Reports
-                                     {t('user_and_pages')} 
-                                    </span>
-                            </h2>
-
-                            <li className="menu nav-item">
-                                <button type="button" className={`${currentMenu === 'general' ? 'active' : ''} nav-link group w-full`} onClick={() => toggleMenu('general')}>
-                                    <div className="flex items-center">
-                                        <IconBarChart className="group-hover:!text-primary shrink-0" />
-                                        <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">General Reports</span>
-                                    </div>
-
-                                    <div className={currentMenu !== 'general' ? 'rtl:rotate-90 -rotate-90' : ''}>
-                                        <IconCaretDown />
-                                    </div>
-                                </button>
-
-                                <AnimateHeight duration={300} height={currentMenu === 'general' ? 'auto' : 0}>
-                                <ul className="sub-menu text-gray-500">
-                                        <li>
-                                            <NavLink to="/general/sales">Sales Summery</NavLink>
-                                        </li>
-                                        <li>
-                                            <NavLink to="/general/expense">expense Summery</NavLink>
-                                        </li>
-                                      
-                                    </ul>
-                                
-                                </AnimateHeight>
-                            </li> */}
-
-                            {/* <li className="menu nav-item">
-                                <button type="button" className={`${currentMenu === 'financial' ? 'active' : ''} nav-link group w-full`} onClick={() => toggleMenu('financial')}>
-                                    <div className="flex items-center">
-                                        <IconMenuInvoice className="group-hover:!text-primary shrink-0" />
-                                        <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">Financial Reports</span>
-                                    </div>
-
-                                    <div className={currentMenu !== 'financial' ? 'rtl:rotate-90 -rotate-90' : ''}>
-                                        <IconCaretDown />
-                                    </div>
-                                </button>
-
-                                <AnimateHeight duration={300} height={currentMenu === 'financial' ? 'auto' : 0}>
-                                <ul className="sub-menu text-gray-500">
-                                        <li>
-                                            <NavLink to="/financial/balance">Balance Sheet</NavLink>
-                                        </li>
-                                        <li>
-                                            <NavLink to="/financial/profit">Profit and loss Report</NavLink>
-                                        </li>
-                                        <li>
-                                            <NavLink to="/financial/ledger">Ledger Report</NavLink>
-                                        </li>
-                                         <li>
-                                            <NavLink to="/users/profile">Receivable Report</NavLink>
-                                        </li> 
-                                    </ul>
-                                
-                                </AnimateHeight>
-                            </li> */}
-
+                  
                             {/* <li className="menu nav-item">
                                 <button type="button" className={`${currentMenu === 'receivable' ? 'active' : ''} nav-link group w-full`} onClick={() => toggleMenu('receivable')}>
                                     <div className="flex items-center">

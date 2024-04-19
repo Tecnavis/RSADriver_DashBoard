@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getFirestore, doc, getDoc, updateDoc, addDoc, collection } from 'firebase/firestore';
 import { GoogleMap, Marker as AdvancedMarkerElement, DirectionsRenderer } from '@react-google-maps/api';
-import { googleMapsApiKey } from '../../config/config';
+import { googleMapsApiKey , storage } from '../../config/config';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'; // Add this import at the top
 
 const Dropoff = () => {
   const location = useLocation();
@@ -12,9 +13,9 @@ const Dropoff = () => {
   const [currentLocation, setCurrentLocation] = useState(null);
   const [currentLocationName, setCurrentLocationName] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [kilometer, setKilometer] = useState(''); // Define kilometer state
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [errors, setErrors] = useState<{ kilometer?: string; photo?: string }>({});
+  const [kilometerdrop, setKilometerdrop] = useState(''); // Define kilometerdrop state
+  const [photodrop, setPhotodrop] = useState<File | null>(null);
+  const [errors, setErrors] = useState<{ kilometerdrop?: string; photodrop?: string }>({});
   const [loadingLocation, setLoadingLocation] = useState(true);
   const [directions, setDirections] = useState(null);
   const [distance, setDistance] = useState(null);
@@ -23,8 +24,8 @@ const Dropoff = () => {
   const db = getFirestore();
   const handleModalClose = () => {
     setShowModal(false);
-    setKilometer('');
-    setPhoto(null);
+    setKilometerdrop('');
+    setPhotodrop(null);
     setErrors({});
   };
   const loadGoogleMapsScript = () => {
@@ -89,13 +90,13 @@ const Dropoff = () => {
   }, []);
 
   const handleSubmit = async () => {
-    let validationErrors: { kilometer?: string; photo?: string } = {};
+    let validationErrors: { kilometerdrop?: string; photodrop?: string } = {};
 
-    if (!kilometer) {
-      validationErrors.kilometer = 'Kilometer is required';
+    if (!kilometerdrop) {
+      validationErrors.kilometerdrop = 'Kilometerdrop is required';
     }
-    if (!photo) {
-      validationErrors.photo = 'Photo is required';
+    if (!photodrop) {
+      validationErrors.photodrop = 'Photodrop is required';
     }
 
     if (Object.keys(validationErrors).length > 0) {
@@ -104,22 +105,31 @@ const Dropoff = () => {
     }
     try {
         // Add document to the 'driverdropoff' collection
-        const docRef = await addDoc(collection(db, 'driverdropoff'), {
-          photo,
-          kilometer,
-      });
-      
-        
-        // Update the status to "Vehicle Picked" in the database
-        await updateDoc(doc(db, 'bookings', id), {
-            status: 'Vehicle dropoff'
-        });
+      //   await updateDoc(doc(db, 'bookings', id), {
+      //     photodrop,
+      //     kilometerdrop,
+      //     status: 'Vehicle dropoff'
 
+      // });
+      // Ensure 'photo' is a File object
+      if (!(photodrop instanceof File)) {
+        throw new Error('The photo must be a File object.');
+      }
+  
+      const storageRef = ref(storage, `photos/${id}/${photodrop.name}`); // Using the booking id and photo name as a reference path
+      const snapshot = await uploadBytes(storageRef, photodrop);
+      const photoUrl = await getDownloadURL(snapshot.ref); // Get the download URL of the uploaded photo
+  
+      // Update the document in the 'bookings' collection
+      await updateDoc(doc(db, 'bookings', id), {
+        photodrop: photoUrl,
+        kilometerdrop: kilometerdrop,
+        status: 'Vehicle dropoff'
+      });
         console.log(`Navigating to /customerverification/${id}`);
         navigate(`/customerverification/${id}`, {
           state: {
             id: id,
-            statusMessage: "Vehicle DropOff"
           }
         });
         
@@ -257,35 +267,35 @@ const Dropoff = () => {
   <div className="modal" style={{ position: 'fixed', top: '50%', left: '55%', transform: 'translate(-50%, -50%)', backgroundColor: '#fff', padding: '20px', borderRadius: '5px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.5)', maxWidth: '90%', maxHeight: '90%', overflowY: 'auto', width: '700px', }}>
     <form>
       <div className="mb-4">
-        <label htmlFor="kilometer" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="kilometerdrop" className="block text-sm font-medium text-gray-700">
           Kilometer
         </label>
         <input
           type="text"
-          id="kilometer"
-          name="kilometer"
+          id="kilometerdrop"
+          name="kilometerdrop"
           placeholder='Enter KM'
-          value={kilometer}
-          onChange={(e) => setKilometer(e.target.value)}
+          value={kilometerdrop}
+          onChange={(e) => setKilometerdrop(e.target.value)}
           className="mt-1 p-2 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
         />
-                        {errors.kilometer && <p className="text-red-500 text-xs italic">{errors.kilometer}</p>}
+                        {errors.kilometerdrop && <p className="text-red-500 text-xs italic">{errors.kilometerdrop}</p>}
 
       </div>
       <div className="mb-4">
-        <label htmlFor="photo" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="photodrop" className="block text-sm font-medium text-gray-700">
           Photo
         </label>
         <input
           type="file"
-          id="photo"
-          name="photo"
+          id="photodrop"
+          name="photodrop"
           accept="image/*"
           capture="camera" 
-          onChange={(e) => setPhoto(e.target.value)}
+          onChange={(e) => setPhotodrop(e.target.files[0])}
           className="mt-1 p-2 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
         />
-                        {errors.photo && <p className="text-red-500 text-xs italic">{errors.photo}</p>}
+                        {errors.photodrop && <p className="text-red-500 text-xs italic">{errors.photodrop}</p>}
 
       </div>
       <div className="flex justify-end">
