@@ -1,6 +1,7 @@
 import firebase from "firebase/compat/app";
 import { getAuth } from "firebase/auth";
 import {getStorage} from "firebase/storage"
+import { getFirestore } from "firebase/firestore";
 const firebaseConfig = {
   apiKey: "AIzaSyAYfaaoi24oJl8dJLTqigiobeRhCpDJ8Oc",
   authDomain: "rsa-dashboard-34773.firebaseapp.com",
@@ -12,6 +13,8 @@ const firebaseConfig = {
 const googleMapsApiKey: string = 'AIzaSyAYfaaoi24oJl8dJLTqigiobeRhCpDJ8Oc';
 
 const app = firebase.initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 const storage = getStorage(app)
 const auth = getAuth(app);
 export { googleMapsApiKey };

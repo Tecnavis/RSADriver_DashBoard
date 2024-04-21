@@ -20,6 +20,7 @@ type RecordData = {
 const NewBooking = () => {
   const [recordsData, setRecordsData] = useState<RecordData[]>([]);
   const [driverDetails, setDriverDetails] = useState(null);
+  const [driverDetailsMap, setDriverDetailsMap] = useState({});
 
   const [selectedBooking, setSelectedBooking] = useState<RecordData | null>(null);
 
@@ -143,24 +144,28 @@ const calculateDriverSalary = (basicSalary, basicSalaryKM, distance, salaryPerKM
   const excessKm = Math.max(0, numericDistance - numericBasicSalaryKM);
   return numericBasicSalary + excessKm * numericSalaryPerKM;
 };
-const handleDriverDetails = async (selectedDriverId, serviceType, distance) => {
+const handleDriverDetails = async (selectedDriverId, serviceType, distance, bookingId) => {
   const details = await fetchDriverDetails(selectedDriverId, serviceType);
   if (details && details.salaryDetails) {
-    // Calculate the total salary once driver details are fetched
     const totalDriverSalary = calculateDriverSalary(
       details.salaryDetails.basicSalary,
       details.salaryDetails.basicSalaryKM,
       distance,
       details.salaryDetails.salaryPerKM
     );
-
-    // Extend driver details with calculated salary
-    setDriverDetails({
-      ...details,
-      totalDriverSalary
-    });
+    // Set the driver details for the specific booking ID
+    setDriverDetailsMap(prevState => ({
+      ...prevState,
+      [bookingId]: {
+        ...details,
+        totalDriverSalary
+      }
+    }));
   } else {
-    setDriverDetails(details); // Set without calculated salary if any details are missing
+    setDriverDetailsMap(prevState => ({
+      ...prevState,
+      [bookingId]: details
+    }));
   }
 };
 
@@ -203,35 +208,31 @@ onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
     fontWeight: 'bold',
     marginTop: '10px'
 }}>
-    Total Salary: ${booking.totalSalary}
+    Total Salary: {booking.totalSalary}
 </p>
 
 
 
-<button className="btn btn-info" style={{ marginTop: '10px' }} onClick={() => handleDriverDetails(booking.selectedDriver, booking.serviceType, booking.distance)}>
-                    View Driver Details
-                </button>
-
-{driverDetails && (
+<button
+  className="btn btn-info"
+  style={{ marginTop: '10px' }}
+  onClick={() => handleDriverDetails(booking.selectedDriver, booking.serviceType, booking.distance, booking.id)}>
+  View Driver Details
+</button>
+{driverDetailsMap[booking.id] && (
   <div>
-   
-    {driverDetails.salaryDetails && (
+    {driverDetailsMap[booking.id].salaryDetails && (
       <>
-        <p className='mt-2'>Basic Salary: {driverDetails.salaryDetails.basicSalary}</p>
-        <p>Salary per KM: {driverDetails.salaryDetails.salaryPerKM}</p>
-        <p>Basic Salary KM: {driverDetails.salaryDetails.basicSalaryKM}</p>
-        <p style={{
-    color: '#d32f2f', 
-    fontSize: '18px',
-    fontWeight: 'bold',
-    marginTop: '10px'
-}}>    Total Salary: ${driverDetails.totalDriverSalary.toFixed(2)}
-</p>
+        <p className='mt-2'>Basic Salary: {driverDetailsMap[booking.id].salaryDetails.basicSalary}</p>
+        <p>Salary per KM: {driverDetailsMap[booking.id].salaryDetails.salaryPerKM}</p>
+        <p>Basic Salary KM: {driverDetailsMap[booking.id].salaryDetails.basicSalaryKM}</p>
+        <p style={{color: '#d32f2f', fontSize: '18px', fontWeight: 'bold', marginTop: '10px'}}>
+          Total Salary: {driverDetailsMap[booking.id].totalDriverSalary.toFixed(2)}
+        </p>
       </>
     )}
   </div>
 )}
-
 
                   <div className="mt-4 flex justify-end">
                   <button style={{
