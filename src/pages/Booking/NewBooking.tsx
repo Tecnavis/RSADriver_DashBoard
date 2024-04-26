@@ -1,8 +1,8 @@
 
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import {  getFirestore, collection, getDocs, updateDoc } from 'firebase/firestore';
 import { getDoc, doc } from 'firebase/firestore';
+import { useLocation, useParams, useNavigate, Link } from 'react-router-dom';
 
 type RecordData = {
   index: number;
@@ -18,37 +18,42 @@ type RecordData = {
 };
 
 const NewBooking = () => {
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const phone = params.get('phone');
+  const password = params.get('password');
+  console.log("phone",phone)
   const [recordsData, setRecordsData] = useState<RecordData[]>([]);
   const [driverDetails, setDriverDetails] = useState(null);
   const [driverDetailsMap, setDriverDetailsMap] = useState({});
 
   const [selectedBooking, setSelectedBooking] = useState<RecordData | null>(null);
-
   const db = getFirestore();
   const navigate = useNavigate();
   const fetchDriverDetails = async (driverId, serviceType) => {
     try {
       const driverDoc = await getDoc(doc(db, 'driver', driverId));
       if (driverDoc.exists()) {
-        console.log("Driver details:", driverDoc.data());
         const driverData = driverDoc.data();
+        if (driverData.phone === phone && driverData.password === password) {
+          if (driverData.selectedServices.includes(serviceType)) {
+            const salaryDetails = {
+              basicSalary: driverData.basicSalaries[serviceType],
+              salaryPerKM: driverData.salaryPerKm[serviceType],
+              basicSalaryKM: driverData.basicSalaryKm[serviceType]
+            };
   
-        // Check if the driver's selected services include the booking's service type
-        if (driverData.selectedServices.includes(serviceType)) {
-          // Fetch the corresponding salary details
-          const salaryDetails = {
-            basicSalary: driverData.basicSalaries[serviceType],
-            salaryPerKM: driverData.salaryPerKm[serviceType],
-            basicSalaryKM: driverData.basicSalaryKm[serviceType]
-          };
-  
-          return {
-            ...driverData,
-            salaryDetails
-          };
+            return {
+              ...driverData,
+              salaryDetails
+            };
+          } else {
+            console.log("Service type not supported by the driver");
+            return { ...driverData, salaryDetails: null };
+          }
         } else {
-          console.log("Service type not supported by the driver");
-          return { ...driverData, salaryDetails: null };
+          console.log("Phone and/or password do not match");
+          return null; 
         }
       } else {
         console.log("No such driver found!");
@@ -59,7 +64,6 @@ const NewBooking = () => {
       return null;
     }
   };
- 
   
   useEffect(() => {
     const fetchData = async () => {
@@ -70,36 +74,44 @@ const NewBooking = () => {
           ...doc.data(),
           id: doc.id,
         }));
-        setRecordsData(dataWithIndex);
+  
+        const filteredData = await Promise.all(dataWithIndex.map(async booking => {
+          const driverDetails = await fetchDriverDetails(booking.selectedDriver, booking.serviceType);
+          if (driverDetails && driverDetails.phone === phone && driverDetails.password === password) {
+            return booking;
+          } else {
+            return null;
+          }
+        }));
+  
+        const filteredRecordsData = filteredData.filter(booking => booking !== null);
+  
+        setRecordsData(filteredRecordsData);
       } catch (error) {
         console.error('Error fetching data: ', error);
       }
     };
     fetchData();
-  }, [db]);
+  }, [db, phone, password]);
+  
   
 
   const handleOkClick = async (booking) => {
     const { customerName, pickupLocation, phoneNumber, totalSalary, id } = booking;
 
     try {
-        // First update to "Order Received"
         await updateDoc(doc(db, 'bookings', id), {
             status: 'Order Received'
         });
 
-        // Set the selected booking for use in other parts of the app
         setSelectedBooking(booking);
 
-        // Update the status to "Contacted Customer"
         await updateDoc(doc(db, 'bookings', id), {
             status: 'Contacted Customer'
         });
 
-        // Initiating a phone call to the customer
         window.open(`tel:${phoneNumber}`);
 
-        // Navigate to the pickup page with the necessary state
         navigate(`/pickup/${id}`, {
             state: {
                 pickupLocation: {
@@ -168,7 +180,10 @@ const handleDriverDetails = async (selectedDriverId, serviceType, distance, book
     }));
   }
 };
-
+// const viewHandler=()=>{
+//   navigate('/bookings/closedbooking', { state: { phone } });
+// console.log("first",phone)
+// }
 return (
   <div>
       <div className="panel mt-6">
@@ -198,17 +213,19 @@ onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
 <p style={{ margin: '5px 0', color: '#555' }}>Phone Number: {booking.phoneNumber}</p>
 
 
+{/* <p>Service Type: {booking.status}</p> */}
+
                   <p>Pickup Location: {booking.pickupLocation.name}</p>
                   <p>Dropoff Location: {booking.dropoffLocation.name}</p>
                   <p>Distance from pickup to dropoff: {booking.distance}</p>
                   <p>Service Type: {booking.serviceType}</p>
                   <p style={{
-    color: '#d32f2f', // Red color for attention
+    color: '#d32f2f', 
     fontSize: '18px',
     fontWeight: 'bold',
     marginTop: '10px'
 }}>
-    Total Salary: {booking.totalSalary}
+    Payable Amount: {booking.totalSalary}
 </p>
 
 
@@ -226,6 +243,7 @@ onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
         <p className='mt-2'>Basic Salary: {driverDetailsMap[booking.id].salaryDetails.basicSalary}</p>
         <p>Salary per KM: {driverDetailsMap[booking.id].salaryDetails.salaryPerKM}</p>
         <p>Basic Salary KM: {driverDetailsMap[booking.id].salaryDetails.basicSalaryKM}</p>
+
         <p style={{color: '#d32f2f', fontSize: '18px', fontWeight: 'bold', marginTop: '10px'}}>
           Total Salary: {driverDetailsMap[booking.id].totalDriverSalary.toFixed(2)}
         </p>
@@ -235,8 +253,9 @@ onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
 )}
 
                   <div className="mt-4 flex justify-end">
-                  <button style={{
-    backgroundColor: '#4caf50',
+                  <button
+  style={{
+    backgroundColor: booking.status === 'Order Completed' ? '#f0f0f0' : '#4caf50',
     color: 'white',
     border: 'none',
     padding: '10px 20px',
@@ -244,33 +263,44 @@ onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
     cursor: 'pointer',
     marginRight: '10px',
     transition: 'background-color 0.3s ease'
-}}
-onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#388e3c'}
-onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4caf50'}
-onClick={() => handleOkClick(booking)}
+  }}
+  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#388e3c'}
+  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = booking.status === 'Order Completed' ? '#f0f0f0' : '#4caf50'}
+  onClick={() => handleOkClick(booking)}
+  disabled={booking.status === 'Order Completed'}
 >
-    OK
+  OK
 </button>
-<button style={{
-    backgroundColor: '#f44336',
+<button
+  style={{
+    backgroundColor: booking.status === 'Order Completed' ? '#f0f0f0' : '#f44336',
     color: 'white',
     border: 'none',
     padding: '10px 20px',
     borderRadius: '5px',
     cursor: 'pointer',
     transition: 'background-color 0.3s ease'
-}}
-onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#d32f2f'}
-onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f44336'}
-onClick={() => handleRejectClick(booking.id)}
+  }}
+  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#d32f2f'}
+  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = booking.status === 'Order Completed' ? '#f0f0f0' : '#f44336'}
+  onClick={() => handleRejectClick(booking.id)}
+  disabled={booking.status === 'Order Completed'}
 >
-    Reject
+  Reject
 </button>
+
+
 
                   </div>
               </div>
           ))}
           </div>
+          <Link to={`/bookings/closedbooking?phone=${phone}`} className="link">
+
+          <button className='btn'>View Status</button>
+         
+          </Link>
+
       </div>
   </div>
 );

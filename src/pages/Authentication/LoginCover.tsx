@@ -1,42 +1,40 @@
-
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import IconMail from '../../components/Icon/IconMail';
+import { collection, addDoc, query, where, getDocs ,getFirestore } from "firebase/firestore";
 import IconLockDots from '../../components/Icon/IconLockDots';
 import IconInstagram from '../../components/Icon/IconInstagram';
 import IconFacebookCircle from '../../components/Icon/IconFacebookCircle';
 import IconTwitter from '../../components/Icon/IconTwitter';
 import IconGoogle from '../../components/Icon/IconGoogle';
-import { auth } from '../../config/config';
+import { auth } from '../../config/config'; // assuming you have auth configured
+import IconPhone from '../../components/Icon/IconPhone';
 
 const LoginCover = () => {
-    
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
     const navigate = useNavigate();
-    
-    const signIn = () => {
-        const auth = getAuth();
-        signInWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                const user = userCredential.user;
-                console.log("User signed in:", user);
-                navigate('/index');
-            })
-            .catch((error) => {
-                const errorCode = error.code;
-                const errorMessage = error.message;
-                console.error("Error signing in:", errorCode, errorMessage);
-                // Handle error appropriately (e.g., display error message to user)
-            });
-    };
+    const [phone, setPhone] = useState('');
+    const [password, setPassword] = useState('');
+    const db = getFirestore();
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        signIn();
+    const signIn = async (e) => {
+        e.preventDefault();
+
+       
+
+        // Query "driver" collection to check if phone and password match
+        const q = query(collection(db, 'driver'), where('phone', '==', phone), where('password', '==', password));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+// Save phone number to local storage
+localStorage.setItem('phone', phone);
+            navigate(`/bookings/newbooking?phone=${phone}&password=${password}`);
+
+        } else {
+            // Handle invalid credentials
+            alert('Invalid credentials');
+        }
     };
-console.log(auth?.currentUser)
     return (
         <div>
             <div className="absolute inset-0">
@@ -44,7 +42,6 @@ console.log(auth?.currentUser)
             </div>
             <div className="relative flex min-h-screen items-center justify-center bg-[url(/assets/images/auth/map.png)] bg-cover bg-center bg-no-repeat px-6 py-10 dark:bg-[#060818] sm:px-16">
                 <img src="/assets/images/auth/coming-soon-object1.png" alt="image" className="absolute left-0 top-1/2 h-full max-h-[893px] -translate-y-1/2" />
-                {/* <img src="/assets/images/auth/coming-soon-object2.png" alt="image" className="absolute left-24 top-0 h-40 md:left-[30%]" /> */}
                 <img src="/assets/images/auth/coming-soon-object3.png" alt="image" className="absolute right-0 top-0 h-[300px]" />
                 <img src="/assets/images/auth/polygon-object.svg" alt="image" className="absolute bottom-0 end-[28%]" />
                 <div className="relative flex w-full max-w-[1502px] flex-col justify-between overflow-hidden rounded-md bg-white/60 backdrop-blur-lg dark:bg-black/50 lg:min-h-[758px] lg:flex-row lg:gap-10 xl:gap-0">
@@ -53,7 +50,6 @@ console.log(auth?.currentUser)
                         <div className="ltr:xl:-skew-x-[14deg] rtl:xl:skew-x-[14deg]">
                             <Link to="/" className="w-48 block lg:w-72 ms-10">
                                 <img src='/assets/images/auth/rsa-png.png' alt='log' className="w-full"/>
-                                {/* <img src="/assets/images/auth/logo-white.svg" alt="Logo" className="w-full" /> */}
                             </Link>
                             <div className="mt-24 hidden w-full max-w-[430px] lg:block">
                                 <img src="/assets/images/auth/login.svg" alt="Cover Image" className="w-full" />
@@ -61,24 +57,19 @@ console.log(auth?.currentUser)
                         </div>
                     </div>
                     <div className="relative flex w-full flex-col items-center justify-center gap-6 px-4 pb-16 pt-6 sm:px-6 lg:max-w-[667px]">
-                        {/* <div className="flex w-full max-w-[440px] items-center gap-2 lg:absolute lg:end-6 lg:top-6 lg:max-w-full">
-                            <Link to="/" className="w-8 block lg:hidden">
-                                <img src="/assets/images/logo.svg" alt="Logo" className="mx-auto w-10" />
-                            </Link>
-                         
-                        </div> */}
+                       
                         <div className="w-full max-w-[440px] lg:mt-16">
                             <div className="mb-10">
                                 <h1 className="text-3xl font-extrabold uppercase !leading-snug text-danger md:text-4xl">Sign in</h1>
                                 <p className="text-base font-bold leading-normal text-white-dark">Enter your email and password to login</p>
                             </div>
-                            <form className="space-y-5 dark:text-white" onSubmit={handleSubmit}>
+                            <form className="space-y-5 dark:text-white" onSubmit={signIn}>
                                 <div>
-                                    <label htmlFor="Email">Email</label>
+                                    <label htmlFor="phone">PhoneNumber</label>
                                     <div className="relative text-white-dark">
-                                    <input id="Email" type="email" placeholder="Enter Email" value={email} onChange={(e) => setEmail(e.target.value)} className="form-input ps-10 placeholder:text-white-dark" />
+                                    <input id="phone" type="phone" placeholder="Enter Phone" value={phone} onChange={(e) => setPhone(e.target.value)} className="form-input ps-10 placeholder:text-white-dark" />
                                         <span className="absolute start-4 top-1/2 -translate-y-1/2">
-                                            <IconMail fill={true} />
+                                            <IconPhone fill={true} />
                                         </span>
                                     </div>
                                 </div>
@@ -91,12 +82,7 @@ console.log(auth?.currentUser)
                                         </span>
                                     </div>
                                 </div>
-                                {/* <div>
-                                    <label className="flex cursor-pointer items-center">
-                                        <input type="checkbox" className="form-checkbox bg-white dark:bg-black" />
-                                        <span className="text-white-dark">Subscribe to weekly newsletter</span>
-                                    </label>
-                                </div> */}
+                              
                                 <button
   type="submit"
   className="btn !mt-6 w-full border-0 uppercase text-white shadow-[0_10px_20px_-10px_rgba(255, 0, 0, 0.44)]"
@@ -156,12 +142,7 @@ console.log(auth?.currentUser)
                                     </li>
                                 </ul>
                             </div>
-                            <div className="text-center dark:text-white">
-                                Don't have an account ?&nbsp;
-                                <Link to="/auth/cover-register" className="uppercase text-primary underline transition hover:text-black dark:hover:text-white">
-                                    SIGN UP
-                                </Link>
-                            </div>
+                           
                         </div>
                         <p className="absolute bottom-6 w-full text-center dark:text-white">© {new Date().getFullYear()}.Tecnavis All Rights Reserved.</p>
                     </div>

@@ -32,9 +32,37 @@ import IconMenuDatatables from '../Icon/Menu/IconMenuDatatables';
 import IconMenuForms from '../Icon/Menu/IconMenuForms';
 import IconMenuPages from '../Icon/Menu/IconMenuPages';
 import IconMenuMore from '../Icon/Menu/IconMenuMore';
+import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
 
 const Header = () => {
     const location = useLocation();
+    const phone = localStorage.getItem('phone');
+    const profileImageUrl = localStorage.getItem('profileImageUrl');
+
+    const [driverData, setDriverData] = useState<any>(null);
+    
+    useEffect(() => {
+        const fetchDriverData = async () => {
+            const db = getFirestore();
+            const q = query(collection(db, 'driver'), where('phone', '==', phone));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc) => {
+                setDriverData(doc.data());
+                
+            });
+        };
+        
+        if (phone) {
+            fetchDriverData();
+        }
+    }, [phone]);
+    useEffect(() => {
+        console.log("aa",driverData?.profileImageUrl);
+    }, [driverData]);
+    useEffect(() => {
+        console.log("Driver Data:", driverData);
+    }, [driverData]);
+    
     useEffect(() => {
         const selector = document.querySelector('ul.horizontal-menu a[href="' + window.location.pathname + '"]');
         if (selector) {
@@ -419,20 +447,29 @@ const Header = () => {
                                 offset={[0, 8]}
                                 placement={`${isRtl ? 'bottom-start' : 'bottom-end'}`}
                                 btnClassName="relative group block"
-                                button={<img className="w-9 h-9 rounded-full object-cover saturate-50 group-hover:saturate-100" src="/assets/images/user-profile.jpeg" alt="userProfile" />}
+                                button=           {driverData && (
+                                    <img className="w-9 h-9 rounded-full object-cover saturate-50 group-hover:saturate-100" src={driverData.profileImageUrl} alt="img" />
+                                )} 
                             >
+       
+
                                 <ul className="text-dark dark:text-white-dark !py-0 w-[230px] font-semibold dark:text-white-light/90">
                                     <li>
                                         <div className="flex items-center px-4 py-4">
-                                            <img className="rounded-md w-10 h-10 object-cover" src="/assets/images/user-profile.jpeg" alt="userProfile" />
+                                                       {driverData && (
+    <img  className="rounded-md w-10 h-10 object-cover" src={driverData.profileImageUrl} alt="img" />
+)}
                                             <div className="ltr:pl-4 rtl:pr-4 truncate">
-                                                <h4 className="text-base">
-                                                    John Doe
+                                                    {driverData && (
+                                    <h4 className="text-base">{driverData.driverName}
+                                
                                                     <span className="text-xs bg-success-light rounded text-success px-1 ltr:ml-2 rtl:ml-2">Pro</span>
                                                 </h4>
+                                                )}
                                                 <button type="button" className="text-black/60 hover:text-primary dark:text-dark-light/60 dark:hover:text-white">
-                                                    johndoe@gmail.com
-                                                </button>
+                                                {driverData && (
+                                        <p>Driver ID: {driverData.idnumber}</p>
+                                    )}                                                </button>
                                             </div>
                                         </div>
                                     </li>
@@ -445,7 +482,7 @@ const Header = () => {
                                  
                                  
                                     <li className="border-t border-white-light dark:border-white-light/10">
-                                        <Link to="/auth/boxed-signin" className="text-danger !py-3">
+                                        <Link to="/auth/cover-login" className="text-danger !py-3">
                                             <IconLogout className="w-4.5 h-4.5 ltr:mr-2 rtl:ml-2 rotate-90 shrink-0" />
                                             Sign Out
                                         </Link>
