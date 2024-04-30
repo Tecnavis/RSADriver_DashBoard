@@ -61,9 +61,7 @@ const AccountSettings = () => {
                 });
             });
 
-            // Upload profile image if selected
             if (profileImageUrl) {
-                // Get a reference to the storage service, and the location where the profile image should be stored
                 const storageRef = ref(storage, `profile_images/${phone}/${profileImageUrl.name}`);
                                 await uploadBytes(storageRef, profileImageUrl);
                                 const imageUrl = await getDownloadURL(storageRef);

@@ -76,9 +76,9 @@ console.log("ph",phone)
                                             <td>{record.pickupLocation.name}</td>
                                             <td>{record.dropoffLocation.name}</td>
                                             <td style={{
-                                                color: 'white',
-                                                backgroundColor: 'RGB(40, 167, 69)',
-                                                borderRadius: '15px',
+                                                      color: record.status === 'Rejected' ? 'white' : 'white',
+                                                      backgroundColor: record.status === 'Rejected' ? 'red' : 'RGB(40, 167, 69)',
+                                                      borderRadius: '15px',
                                                 fontWeight: '900',
                                                 cursor: 'pointer',
                                                 textAlign: 'center',

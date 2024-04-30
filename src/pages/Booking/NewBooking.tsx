@@ -1,8 +1,9 @@
 
 import React, { useEffect, useState } from 'react';
-import {  getFirestore, collection, getDocs, updateDoc } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, updateDoc, addDoc} from 'firebase/firestore';
 import { getDoc, doc } from 'firebase/firestore';
 import { useLocation, useParams, useNavigate, Link } from 'react-router-dom';
+
 
 type RecordData = {
   index: number;
@@ -14,6 +15,7 @@ type RecordData = {
   lng: number
   id: string;
   status: string; 
+  dateTime: string; 
 
 };
 
@@ -104,14 +106,17 @@ const NewBooking = () => {
             status: 'Order Received'
         });
 
-        setSelectedBooking(booking);
+        window.open(`tel:${phoneNumber}`);
+
+        await new Promise(resolve => setTimeout(resolve, 3000)); 
 
         await updateDoc(doc(db, 'bookings', id), {
             status: 'Contacted Customer'
         });
 
-        window.open(`tel:${phoneNumber}`);
+        setSelectedBooking(booking);
 
+        // Navigate to pickup page
         navigate(`/pickup/${id}`, {
             state: {
                 pickupLocation: {
@@ -129,19 +134,25 @@ const NewBooking = () => {
     }
 };
 
-
 const handleRejectClick = async (id: string) => {
   try {
-    await updateDoc(doc(db, 'bookings', id), {
-      status: 'Rejected'
-    });
-    // Optionally refresh the bookings list or show a notification
-    alert("Booking rejected.");
-    setRecordsData(prev => prev.filter(booking => booking.id !== id)); // remove from UI
+    const confirmed = window.confirm("Are you sure you want to reject this booking?");
+    if (confirmed) {
+      await updateDoc(doc(db, 'bookings', id), {
+        status: 'Rejected'
+      });
+      // Optionally refresh the bookings list or show a notification
+      alert("Booking rejected.");
+      setRecordsData(prev => prev.filter(booking => booking.id !== id)); // remove from UI
+    } else {
+      // Handle rejection cancellation if needed
+      console.log("Booking rejection cancelled.");
+    }
   } catch (error) {
     console.error('Error rejecting booking: ', error);
   }
 };
+
 const calculateDriverSalary = (basicSalary, basicSalaryKM, distance, salaryPerKM) => {
   const numericBasicSalary = parseFloat(basicSalary);
   const numericBasicSalaryKM = parseFloat(basicSalaryKM);
@@ -202,18 +213,18 @@ return (
 onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
 onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
 >
-<h2 style={{
-    fontSize: '22px',
+<p style={{
+    fontSize: '20px',
     fontWeight: '600',
     marginBottom: '10px',
     color: '#333'
 }}>
     {booking.customerName}
-</h2>
+</p>
+{booking.dateTime}
 <p style={{ margin: '5px 0', color: '#555' }}>Phone Number: {booking.phoneNumber}</p>
 
 
-{/* <p>Service Type: {booking.status}</p> */}
 
                   <p>Pickup Location: {booking.pickupLocation.name}</p>
                   <p>Dropoff Location: {booking.dropoffLocation.name}</p>
