@@ -3,38 +3,45 @@ import { Link, useNavigate } from 'react-router-dom';
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { collection, addDoc, query, where, getDocs ,getFirestore } from "firebase/firestore";
 import IconLockDots from '../../components/Icon/IconLockDots';
-import IconInstagram from '../../components/Icon/IconInstagram';
-import IconFacebookCircle from '../../components/Icon/IconFacebookCircle';
-import IconTwitter from '../../components/Icon/IconTwitter';
-import IconGoogle from '../../components/Icon/IconGoogle';
-import { auth } from '../../config/config'; // assuming you have auth configured
 import IconPhone from '../../components/Icon/IconPhone';
 
 const LoginCover = () => {
     const navigate = useNavigate();
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
+    const [keepLoggedIn, setKeepLoggedIn] = useState(false); 
     const db = getFirestore();
+    useEffect(() => {
+        const loggedIn = localStorage.getItem('loggedIn');
+        if (loggedIn === 'true') {
+            // Redirect to home page or dashboard if user is already logged in
+            navigate('/bookings/newbooking');
+        }
+    }, []); // Empty dependency array ensures this effect runs only once on component mount
 
     const signIn = async (e) => {
         e.preventDefault();
-
-       
 
         // Query "driver" collection to check if phone and password match
         const q = query(collection(db, 'driver'), where('phone', '==', phone), where('password', '==', password));
         const querySnapshot = await getDocs(q);
 
         if (!querySnapshot.empty) {
-// Save phone number to local storage
-localStorage.setItem('phone', phone);
-            navigate(`/bookings/newbooking?phone=${phone}&password=${password}`);
+            // Save phone number to local storage
+            localStorage.setItem('phone', phone);
+            
+            // If user wants to stay logged in, set a flag in local storage
+            if (keepLoggedIn) {
+                localStorage.setItem('loggedIn', 'true');
+            }
 
+            navigate(`/bookings/newbooking?phone=${phone}&password=${password}`);
         } else {
             // Handle invalid credentials
             alert('Invalid credentials');
         }
     };
+
     return (
         <div>
             <div className="absolute inset-0">
@@ -95,53 +102,8 @@ localStorage.setItem('phone', phone);
 
                             <div className="relative my-7 text-center md:mb-9">
                                 <span className="absolute inset-x-0 top-1/2 h-px w-full -translate-y-1/2 bg-white-light dark:bg-white-dark"></span>
-                                <span className="relative bg-white px-2 font-bold uppercase text-white-dark dark:bg-dark dark:text-white-light">or</span>
                             </div>
-                            <div className="mb-10 md:mb-[60px]">
-                                <ul className="flex justify-center gap-3.5 text-white">
-                                    <li>
-                                        <Link
-                                            to="#"
-                                            className="inline-flex h-8 w-8 items-center justify-center rounded-full p-0 transition hover:scale-110"
-                                            style={{
-                                                background: 'linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(255, 0, 0, 1) 100%)',
-                                              }}                                        >
-                                            <IconInstagram />
-                                        </Link>
-                                    </li>
-                                    <li>
-                                    <Link
-  to="#"
-  className="inline-flex h-8 w-8 items-center justify-center rounded-full p-0 transition hover:scale-110"
-  style={{
-    background: 'linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(255, 0, 0, 1) 100%)',
-  }}
->
-                                            <IconFacebookCircle />
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            to="#"
-                                            className="inline-flex h-8 w-8 items-center justify-center rounded-full p-0 transition hover:scale-110"
-                                            style={{
-                                                background: 'linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(255, 0, 0, 1) 100%)',
-                                              }}                                        >
-                                            <IconTwitter fill={true} />
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            to="#"
-                                            className="inline-flex h-8 w-8 items-center justify-center rounded-full p-0 transition hover:scale-110"
-                                            style={{
-                                                background: 'linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(255, 0, 0, 1) 100%)',
-                                              }}                                        >
-                                            <IconGoogle />
-                                        </Link>
-                                    </li>
-                                </ul>
-                            </div>
+                          
                            
                         </div>
                         <p className="absolute bottom-6 w-full text-center dark:text-white">© {new Date().getFullYear()}.Tecnavis All Rights Reserved.</p>
