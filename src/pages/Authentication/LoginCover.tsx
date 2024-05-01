@@ -4,7 +4,7 @@ import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { collection, addDoc, query, where, getDocs ,getFirestore } from "firebase/firestore";
 import IconLockDots from '../../components/Icon/IconLockDots';
 import IconPhone from '../../components/Icon/IconPhone';
-
+import { navigate } from '@reach/router';
 const LoginCover = () => {
     const navigate = useNavigate();
     const [phone, setPhone] = useState('');
