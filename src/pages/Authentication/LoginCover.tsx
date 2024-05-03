@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { collection, query, where, getDocs, getFirestore, doc, updateDoc, GeoPoint, setDoc, getDoc, addDoc } from "firebase/firestore";
+import { collection, addDoc, query, where, getDocs, getFirestore, doc, updateDoc ,GeoPoint} from "firebase/firestore";
 import IconLockDots from '../../components/Icon/IconLockDots';
 import IconPhone from '../../components/Icon/IconPhone';
+import { navigate } from '@reach/router';
+import firebase from "firebase/compat/app";
 
 const LoginCover = () => {
     const navigate = useNavigate();
@@ -12,7 +14,7 @@ const LoginCover = () => {
     const [keepLoggedIn, setKeepLoggedIn] = useState(false);
     const [currentLocation, setCurrentLocation] = useState(null);
     const db = getFirestore();
-console.log("pho",phone)
+
     useEffect(() => {
         const loggedIn = localStorage.getItem('loggedIn');
         if (loggedIn === 'true') {
@@ -20,89 +22,37 @@ console.log("pho",phone)
         }
     }, []);
 
+    const updateDriverLocation = async (phone, location) => {
+        const driverRef = doc(db, 'driver', phone);
+        await updateDoc(driverRef, {
+            currentLocation: new GeoPoint(location.latitude, location.longitude)
+        });
+    };
+
     useEffect(() => {
+        // Start watching for position changes
         const watchId = navigator.geolocation.watchPosition(
-            async (position) => {
+            (position) => {
                 const { latitude, longitude } = position.coords;
                 setCurrentLocation({ latitude, longitude });
                 console.log('Current Location:', { latitude, longitude });
-                console.log('Phone:', phone); // Log the phone variable
     
-                if (phone) {
-                    try {
-                        const driverRef = doc(db, 'driver', phone);
-                        await updateDoc(driverRef, {
-                            currentLocation: new GeoPoint(latitude, longitude)
-                        });
-                        console.log('Driver location updated successfully for phone:', phone);
-                    } catch (error) {
-                        console.error('Error updating driver location:', error);
-                    }
-                } else {
-                    console.error('Error updating driver location: Phone number is missing.');
-                }
+                // Add or update current location in driver database
+                updateDriverLocation(phone, { latitude, longitude });
             },
             (error) => {
                 console.error('Error getting current location:', error);
             }
         );
     
+        // Clean up watch on component unmount
         return () => {
             navigator.geolocation.clearWatch(watchId);
         };
-    }, [phone]);
+    }, [phone]); 
     
-    const updateDriverLocation = async (phone, location) => {
-        try {
-            if (!phone) {
-                console.error('Error updating driver location: Phone number is missing.');
-                return;
-            }
-    
-            const driverRef = doc(db, 'driver', phone);
-            const bookingRef = collection(db, 'bookings');
-    
-            // Update driver location in the driver collection
-            await updateDoc(driverRef, {
-                currentLocation: new GeoPoint(location.latitude, location.longitude)
-            });
-            console.log('Driver location updated successfully:', location); // Log the updated location
-    
-            // Add current location to the bookings collection
-            await addDoc(bookingRef, {
-                driverId: phone,
-                location: new GeoPoint(location.latitude, location.longitude),
-                timestamp: new Date()
-            });
-            console.log('Current location added to bookings successfully:', location);
-        } catch (error) {
-            console.error('Error updating driver location:', error);
-        }
-    };
-    
-const getLocationAndUpdate = () => {
-    navigator.geolocation.getCurrentPosition(
-        (position) => {
-            const { latitude, longitude } = position.coords;
-            setCurrentLocation({ latitude, longitude });
-            console.log('Current Location:', { latitude, longitude });
-    
-            // Add or update current location in driver database
-            if (phone) {
-                updateDriverLocation(phone, { latitude, longitude });
-            } else {
-                console.error('Error updating driver location: Phone number is missing.');
-            }
-        },
-        (error) => {
-            console.error('Error getting current location:', error);
-        }
-    );
-};
-
-const signIn = async (e) => {
-    e.preventDefault();
-    try {
+    const signIn = async (e) => {
+        e.preventDefault();
         const q = query(collection(db, 'driver'), where('phone', '==', phone), where('password', '==', password));
         const querySnapshot = await getDocs(q);
 
@@ -111,34 +61,11 @@ const signIn = async (e) => {
             if (keepLoggedIn) {
                 localStorage.setItem('loggedIn', 'true');
             }
-            // Get current location
-            navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    const { latitude, longitude } = position.coords;
-                    setCurrentLocation({ latitude, longitude });
-                    console.log('Current Location:', { latitude, longitude });
-
-                    // Add or update current location in driver database
-                    const driverRef = doc(db, 'driver', phone);
-                    await updateDoc(driverRef, {
-                        currentLocation: new GeoPoint(latitude, longitude)
-                    });
-                    console.log('Driver location updated successfully.');
-
-                    // Redirect to new booking page
-                    navigate(`/bookings/newbooking?phone=${phone}&password=${password}`);
-                },
-                (error) => {
-                    console.error('Error getting current location:', error);
-                }
-            );
+            navigate(`/bookings/newbooking?phone=${phone}&password=${password}`);
         } else {
             alert('Invalid credentials');
         }
-    } catch (error) {
-        console.error('Error signing in:', error);
-    }
-};
+    };
 
     return (
         <div>
