@@ -10,7 +10,7 @@ const firebaseConfig = {
   messagingSenderId: "751667160757",
   appId: "1:751667160757:web:6eac73e5039f3249ff00fc"
 };
-const googleMapsApiKey: string = 'AIzaSyAYfaaoi24oJl8dJLTqigiobeRhCpDJ8Oc';
+const googleMapsApiKey: string = 'AIzaSyCZB9gW-DAzfs15Vv3J2FrpeB_yimf-ED4';
 
 const app = firebase.initializeApp(firebaseConfig);
 const db = getFirestore(app);
