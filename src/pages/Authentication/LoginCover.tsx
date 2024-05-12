@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { collection, addDoc, query, where, getDocs, getFirestore, doc, updateDoc ,GeoPoint} from "firebase/firestore";
+import { getDocs, getFirestore, doc, updateDoc, GeoPoint, query, where, collection, getDoc } from "firebase/firestore";
 import IconLockDots from '../../components/Icon/IconLockDots';
 import IconPhone from '../../components/Icon/IconPhone';
-import { navigate } from '@reach/router';
-import firebase from "firebase/compat/app";
 
 const LoginCover = () => {
     const navigate = useNavigate();
@@ -14,59 +11,97 @@ const LoginCover = () => {
     const [keepLoggedIn, setKeepLoggedIn] = useState(false);
     const [currentLocation, setCurrentLocation] = useState(null);
     const db = getFirestore();
-
+    const [driverId, setDriverId] = useState('');
     useEffect(() => {
         const loggedIn = localStorage.getItem('loggedIn');
+
         if (loggedIn === 'true') {
             navigate('/bookings/newbooking');
         }
     }, []);
 
-    const updateDriverLocation = async (phone, location) => {
-        const driverRef = doc(db, 'driver', phone);
-        await updateDoc(driverRef, {
-            currentLocation: new GeoPoint(location.latitude, location.longitude)
-        });
-    };
-
-    useEffect(() => {
-        // Start watching for position changes
-        const watchId = navigator.geolocation.watchPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                setCurrentLocation({ latitude, longitude });
-                console.log('Current Location:', { latitude, longitude });
-    
-                // Add or update current location in driver database
-                updateDriverLocation(phone, { latitude, longitude });
-            },
-            (error) => {
-                console.error('Error getting current location:', error);
+    const updateDriverLocation = async (driverId, location) => {
+        try {
+            if (!driverId) {
+                console.error('Error updating driver location: driverId number is missing.');
+                return;
             }
-        );
-    
-        // Clean up watch on component unmount
-        return () => {
-            navigator.geolocation.clearWatch(watchId);
-        };
-    }, [phone]); 
-    
-    const signIn = async (e) => {
-        e.preventDefault();
-        const q = query(collection(db, 'driver'), where('phone', '==', phone), where('password', '==', password));
-        const querySnapshot = await getDocs(q);
 
-        if (!querySnapshot.empty) {
-            localStorage.setItem('phone', phone);
-            if (keepLoggedIn) {
-                localStorage.setItem('loggedIn', 'true');
+            const driverRef = doc(db, 'driver', driverId);
+            const driverDoc = await getDoc(driverRef);
+
+            if (driverDoc.exists()) {
+                await updateDoc(driverRef, {
+                    currentLocation: new GeoPoint(location.latitude, location.longitude)
+                });
+                console.log('Driver location updated successfully for driverId:', driverId);
+                console.log('Updated location:', location);
+            } else {
+                console.error('Driver document does not exist for driverId:', driverId);
             }
-            navigate(`/bookings/newbooking?phone=${phone}&password=${password}`);
-        } else {
-            alert('Invalid credentials');
+        } catch (error) {
+            console.error('Error updating driver location:', error);
         }
     };
 
+    const signIn = async (e) => {
+        e.preventDefault();
+        try {
+            const q = query(collection(db, 'driver'), where('phone', '==', phone), where('password', '==', password));
+            const querySnapshot = await getDocs(q);
+    
+            if (!querySnapshot.empty) {
+                let driverId = null;
+                querySnapshot.forEach(doc => {
+                    driverId = doc.id;
+                });
+                localStorage.setItem('driverId', driverId);
+                localStorage.setItem('password', password);
+
+                localStorage.setItem('phone', phone);
+                if (keepLoggedIn) {
+                    localStorage.setItem('loggedIn', 'true');
+                }
+                navigate(`/bookings/newbooking`);
+                console.log('Driver ID:', driverId);
+    
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const { latitude, longitude } = position.coords;
+                        const location = { latitude, longitude };
+                        // Update current location in the database
+                        updateDriverLocation(driverId, location);
+                    },
+                    (error) => {
+                        console.error('Error getting current location:', error);
+                    }
+                );
+
+                // Update current location every 5 seconds
+                const intervalId = setInterval(() => {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const { latitude, longitude } = position.coords;
+                            const location = { latitude, longitude };
+                            // Update current location in the database
+                            updateDriverLocation(driverId, location);
+                        },
+                        (error) => {
+                            console.error('Error getting current location:', error);
+                        }
+                    );
+                }, 5000);
+
+                // Clear the interval when the component unmounts
+                return () => clearInterval(intervalId);
+            } else {
+                alert('Invalid credentials');
+            }
+        } catch (error) {
+            console.error('Error signing in:', error);
+            alert('An error occurred while signing in. Please try again later.');
+        }
+    };
     return (
         <div>
             <div className="absolute inset-0">

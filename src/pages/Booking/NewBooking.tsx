@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { getFirestore, collection, getDocs, updateDoc, addDoc } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, updateDoc, addDoc, query, where } from 'firebase/firestore';
 import { getDoc, doc } from 'firebase/firestore';
-import { useLocation, useParams, useNavigate, Link } from 'react-router-dom';
+import {useNavigate, Link } from 'react-router-dom';
 
 type RecordData = {
     index: number;
@@ -17,14 +17,18 @@ type RecordData = {
 };
 
 const NewBooking = () => {
-    const location = useLocation();
-    const params = new URLSearchParams(location.search);
-    const phone = params.get('phone');
-    const password = params.get('password');
+    const driverId = localStorage.getItem('driverId'); // Get driverId from localStorage
+    const phone = localStorage.getItem('phone'); // Get driverId from localStorage
+    const password = localStorage.getItem('password'); // Get driverId from localStorage
+console.log("driverId",driverId)
+console.log("phone",phone)
+
+console.log("password",password)
+
     console.log('phone', phone);
     const [recordsData, setRecordsData] = useState<RecordData[]>([]);
     const [driverDetails, setDriverDetails] = useState(null);
-    const [driverDetailsMap, setDriverDetailsMap] = useState({});
+    const [driverDetailsMap, setDriverDetailsMap] = useState<{ [key: string]: { totalDriverSalary: number; totalDistance: number } }>({});
 
     const [selectedBooking, setSelectedBooking] = useState<RecordData | null>(null);
     const db = getFirestore();
@@ -70,15 +74,17 @@ const NewBooking = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const querySnapshot = await getDocs(collection(db, 'bookings'));
+                // Fetch bookings for the specific driverId
+                const querySnapshot = await getDocs(query(collection(db, 'bookings'), where('selectedDriver', '==', driverId)));
                 const dataWithIndex = querySnapshot.docs.map((doc, index) => ({
                     index: index + 2000,
                     ...doc.data(),
                     id: doc.id,
                 }));
-
+    
                 const filteredData = await Promise.all(
                     dataWithIndex.map(async (booking) => {
+                        // Fetch driver details for each booking
                         const driverDetails = await fetchDriverDetails(booking.selectedDriver, booking.serviceType);
                         if (driverDetails && driverDetails.phone === phone && driverDetails.password === password) {
                             return booking;
@@ -87,16 +93,19 @@ const NewBooking = () => {
                         }
                     })
                 );
-
+    
                 const filteredRecordsData = filteredData.filter((booking) => booking !== null);
-
+    
                 setRecordsData(filteredRecordsData);
+                console.log("first",filteredRecordsData)
             } catch (error) {
                 console.error('Error fetching data: ', error);
             }
         };
         fetchData();
-    }, [db, phone, password]);
+    }, [db, phone, password, driverId]); // Add driverId to the dependency array
+    
+    
 
     const handleOkClick = async (booking) => {
         const { customerName, pickupLocation, phoneNumber, totalSalary, id } = booking;
@@ -153,39 +162,47 @@ const NewBooking = () => {
         }
     };
 
-    const calculateDriverSalary = (basicSalary, basicSalaryKM, distance, salaryPerKM) => {
+    const calculateDriverSalary = (basicSalary, basicSalaryKM, totalDistance, salaryPerKM) => {
         const numericBasicSalary = parseFloat(basicSalary);
         const numericBasicSalaryKM = parseFloat(basicSalaryKM);
-        const numericDistance = parseFloat(distance.replace('km', '').trim()); // Assuming distance is a string like '8.0 km'
+        const numericTotalDistance = totalDistance
         const numericSalaryPerKM = parseFloat(salaryPerKM);
-
-        if (isNaN(numericBasicSalary) || isNaN(numericBasicSalaryKM) || isNaN(numericDistance) || isNaN(numericSalaryPerKM)) {
+        console.log('Basic Salary:', numericBasicSalary);
+        console.log('Basic Salary KM:', numericBasicSalaryKM);
+        console.log('Total Distance:', numericTotalDistance);
+        console.log('Salary Per KM:', numericSalaryPerKM);
+    
+        if (isNaN(numericBasicSalary) || isNaN(numericBasicSalaryKM) || isNaN(numericTotalDistance) || isNaN(numericSalaryPerKM)) {
             console.error('Invalid numeric values for salary calculation');
             return 0;
         }
-
-        const excessKm = Math.max(0, numericDistance - numericBasicSalaryKM);
+    
+        const excessKm = Math.max(0, numericTotalDistance - numericBasicSalaryKM);
         return numericBasicSalary + excessKm * numericSalaryPerKM;
     };
-    const handleDriverDetails = async (selectedDriverId, serviceType, distance, bookingId) => {
+    
+    const handleDriverDetails = async (selectedDriverId, serviceType, totalDistance, bookingId) => {
+        // Assuming totalDistance is already available or calculated
         const details = await fetchDriverDetails(selectedDriverId, serviceType);
         if (details && details.salaryDetails) {
-            const totalDriverSalary = calculateDriverSalary(details.salaryDetails.basicSalary, details.salaryDetails.basicSalaryKM, distance, details.salaryDetails.salaryPerKM);
+            const totalDriverSalary = calculateDriverSalary(details.salaryDetails.basicSalary, details.salaryDetails.basicSalaryKM, totalDistance, details.salaryDetails.salaryPerKM);
             setDriverDetailsMap((prevState) => ({
                 ...prevState,
                 [bookingId]: {
                     ...details,
                     totalDriverSalary,
+                    totalDistance,
                 },
             }));
         } else {
             setDriverDetailsMap((prevState) => ({
                 ...prevState,
                 [bookingId]: details,
+                totalDistance,
+
             }));
         }
     };
-
     return (
         <div>
             <div className="panel mt-6">
@@ -221,7 +238,7 @@ const NewBooking = () => {
 
                             <p>Pickup Location: {booking.pickupLocation.name}</p>
                             <p>Dropoff Location: {booking.dropoffLocation.name}</p>
-                            <p>Distance from pickup to dropoff: {booking.distance}</p>
+                            <p>Total Distance: {booking.totalDistance}</p>
                             <p>Service Type: {booking.serviceType}</p>
                             <p
                                 style={{
@@ -237,7 +254,7 @@ const NewBooking = () => {
                             <button
                                 className="btn btn-info"
                                 style={{ marginTop: '10px' }}
-                                onClick={() => handleDriverDetails(booking.selectedDriver, booking.serviceType, booking.distance, booking.id)}
+                                onClick={() => handleDriverDetails(booking.selectedDriver, booking.serviceType, booking.totalDistance, booking.id)}
                             >
                                 View Driver Details
                             </button>
@@ -248,6 +265,7 @@ const NewBooking = () => {
                                             <p className="mt-2">Basic Salary: {driverDetailsMap[booking.id].salaryDetails.basicSalary}</p>
                                             <p>Salary per KM: {driverDetailsMap[booking.id].salaryDetails.salaryPerKM}</p>
                                             <p>Basic Salary KM: {driverDetailsMap[booking.id].salaryDetails.basicSalaryKM}</p>
+                                            <p>Total Distance: {driverDetailsMap[booking.id].totalDistance}</p>
 
                                             <p style={{ color: '#d32f2f', fontSize: '18px', fontWeight: 'bold', marginTop: '10px' }}>
                                                 Total Salary: {driverDetailsMap[booking.id].totalDriverSalary.toFixed(2)}

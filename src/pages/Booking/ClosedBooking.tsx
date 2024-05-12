@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import 'tippy.js/dist/tippy.css';
 import { useDispatch } from 'react-redux';
 import { setPageTitle } from '../../store/themeConfigSlice';
-import { collection, getFirestore, onSnapshot, doc, getDoc } from 'firebase/firestore';
+import { collection, getFirestore, onSnapshot, doc, getDoc, orderBy, query } from 'firebase/firestore';
 import { useLocation } from 'react-router-dom';
 
 const ClosedBooking = () => {
@@ -13,20 +13,6 @@ console.log("ph",phone)
     const [recordsData, setRecordsData] = useState([]);
     const [drivers, setDrivers] = useState({});
     const db = getFirestore();
-
-    useEffect(() => {
-        dispatch(setPageTitle('Status'));
-
-        const unsubscribe = onSnapshot(collection(db, 'bookings'), (snapshot) => {
-            const updatedBookingsData = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-            }));
-            setRecordsData(updatedBookingsData);
-        });
-
-        return () => unsubscribe();
-    }, [db, dispatch]);
 
     useEffect(() => {
         const fetchDriverData = async () => {
@@ -42,9 +28,27 @@ console.log("ph",phone)
             }
             setDrivers(driverData);
         };
-
+    
         fetchDriverData();
     }, [db, recordsData]);
+    
+    useEffect(() => {
+        dispatch(setPageTitle('Status'));
+    
+        const unsubscribe = onSnapshot(
+            query(collection(db, 'bookings'), orderBy('dateTime', 'desc')),
+            (snapshot) => {
+                const updatedBookingsData = snapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                }));
+                setRecordsData(updatedBookingsData);
+            }
+        );
+    
+        return () => unsubscribe();
+    }, [db, dispatch]);
+    
 
     return (
         <div className="grid xl:grid-cols-1 gap-6 grid-cols-1">
@@ -56,7 +60,8 @@ console.log("ph",phone)
                     <table className="table-hover">
                         <thead>
                             <tr>
-                                
+                            <th>Date & Time</th>
+
                                 <th>Customer Name</th>
                                 <th>Customer Contact Number</th>
                                 <th>Pickup Location</th>
@@ -71,6 +76,8 @@ console.log("ph",phone)
                                 if (driverPhone === phone || driverPersonalPhone === phone) {
                                     return (
                                         <tr key={record.id}>
+                                                                                        <td>{record.dateTime}</td>
+
                                             <td>{record.customerName}</td>
                                             <td>{record.phoneNumber} / {record.mobileNumber}</td>
                                             <td>{record.pickupLocation.name}</td>
