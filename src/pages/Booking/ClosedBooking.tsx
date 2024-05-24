@@ -6,8 +6,15 @@ import { collection, getFirestore, onSnapshot, doc, getDoc, orderBy, query } fro
 import { useLocation } from 'react-router-dom';
 
 const ClosedBooking = () => {
-const phone = localStorage.getItem('phone');
+    const driverId = localStorage.getItem('driverId'); // Get driverId from localStorage
+    const phone = localStorage.getItem('phone'); // Get driverId from localStorage
+    const password = localStorage.getItem('password'); // Get driverId from localStorage
+console.log("driverId",driverId)
+console.log("phone",phone)
 
+console.log("password",password)
+
+    console.log('phone', phone);
 console.log("ph",phone)
     const dispatch = useDispatch();
     const [recordsData, setRecordsData] = useState([]);
