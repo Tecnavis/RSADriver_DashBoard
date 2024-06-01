@@ -31,6 +31,8 @@ const NewBooking = () => {
     console.log('password', password);
 
     console.log('phone', phone);
+    const [selectedBooking, setSelectedBooking] = useState<RecordData | null>(null);
+
     const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [recordsData, setRecordsData] = useState<RecordData[]>([]);
     const [driverDetailsMap, setDriverDetailsMap] = useState<{ [key: string]: { totalDriverSalary: number; totalDistance: number } }>({});
