@@ -6,16 +6,10 @@ import { collection, getFirestore, onSnapshot, doc, getDoc, orderBy, query } fro
 import { useLocation } from 'react-router-dom';
 
 const ClosedBooking = () => {
-    const driverId = localStorage.getItem('driverId'); // Get driverId from localStorage
-    const phone = localStorage.getItem('phone'); // Get driverId from localStorage
-    const password = localStorage.getItem('password'); // Get driverId from localStorage
-console.log("driverId",driverId)
-console.log("phone",phone)
+    const driverId = localStorage.getItem('driverId');
+    const phone = localStorage.getItem('phone');
+    const password = localStorage.getItem('password');
 
-console.log("password",password)
-
-    console.log('phone', phone);
-console.log("ph",phone)
     const dispatch = useDispatch();
     const [recordsData, setRecordsData] = useState([]);
     const [drivers, setDrivers] = useState({});
@@ -56,6 +50,18 @@ console.log("ph",phone)
         return () => unsubscribe();
     }, [db, dispatch]);
     
+    const getStatusStyle = (status) => {
+        switch (status) {
+            case 'Order Completed':
+                return { backgroundColor: 'RGB(40, 167, 69)', color: 'white' };
+            case 'booking added':
+                return { backgroundColor: 'orange', color: 'white' };
+            case 'Rejected':
+                return { backgroundColor: 'red', color: 'white' };
+            default:
+                return {};
+        }
+    };
 
     return (
         <div className="grid xl:grid-cols-1 gap-6 grid-cols-1">
@@ -67,8 +73,7 @@ console.log("ph",phone)
                     <table className="table-hover">
                         <thead>
                             <tr>
-                            <th>Date & Time</th>
-
+                                <th>Date & Time</th>
                                 <th>Customer Name</th>
                                 <th>Customer Contact Number</th>
                                 <th>Pickup Location</th>
@@ -83,16 +88,14 @@ console.log("ph",phone)
                                 if (driverPhone === phone || driverPersonalPhone === phone) {
                                     return (
                                         <tr key={record.id}>
-                                                                                        <td>{record.dateTime}</td>
-
+                                            <td>{record.dateTime}</td>
                                             <td>{record.customerName}</td>
                                             <td>{record.phoneNumber} / {record.mobileNumber}</td>
                                             <td>{record.pickupLocation.name}</td>
                                             <td>{record.dropoffLocation.name}</td>
                                             <td style={{
-                                                      color: record.status === 'Rejected' ? 'white' : 'white',
-                                                      backgroundColor: record.status === 'Rejected' ? 'red' : 'RGB(40, 167, 69)',
-                                                      borderRadius: '15px',
+                                                ...getStatusStyle(record.status),
+                                                borderRadius: '15px',
                                                 fontWeight: '900',
                                                 cursor: 'pointer',
                                                 textAlign: 'center',

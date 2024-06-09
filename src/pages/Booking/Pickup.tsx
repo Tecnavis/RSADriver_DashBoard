@@ -18,9 +18,9 @@ const Pickup = () => {
 
   const [directions, setDirections] = useState(null);
   const [distance, setDistance] = useState(null);
-  const [kilometer, setKilometer] = useState(''); // Define kilometer state
+  const [kilometer, setKilometer] = useState(''); 
   const [photo, setPhoto] = useState<File | null>(null);
-  const [status, setStatus] = useState(''); // Define status state variable
+  const [status, setStatus] = useState('');
   const [errors, setErrors] = useState<{ kilometer?: string; photo?: string }>({});
   const navigate = useNavigate();
 console.log("T8ky",id)
@@ -65,7 +65,6 @@ console.log("status",status)
     }
   
     try {
-      // Ensure 'photo' is a File object
       if (!(photo instanceof File)) {
         throw new Error('The photo must be a File object.');
       }
@@ -193,7 +192,7 @@ console.log("status",status)
                 new google.maps.LatLng(currentLocation.lat, currentLocation.lng),
                 new google.maps.LatLng(pickupLocation.lat, pickupLocation.lng)
             );
-            if (distance < 100) {
+            if (distance < 500) {
                 // Update the status to "Vehicle Confirmed" in the database
                 try {
                     await updateDoc(doc(db, 'bookings', id), {

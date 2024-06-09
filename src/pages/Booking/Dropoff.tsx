@@ -195,7 +195,7 @@ const Dropoff = () => {
           new google.maps.LatLng(currentLocation.lat, currentLocation.lng),
           new google.maps.LatLng(dropoffLocation.lat, dropoffLocation.lng)
         );
-        if (distance < 100) {
+        if (distance < 500) {
           alert('Reached destination!');
           clearInterval(intervalId);
           setShowModal(true); // Show the modal when destination is reached

@@ -248,6 +248,18 @@ const NewBooking = () => {
             console.error('Error handling driver details: ', error);
         }
     };
+    const handleCallClick = async (bookingId) => {
+      try {
+          await updateDoc(doc(db, 'bookings', bookingId), {
+              status: 'Contacted Customer',
+          });
+          console.log('Booking status updated to "Contacted Customer"');
+          // Optionally, you can refresh the booking data or update the state here to reflect the change in the UI
+      } catch (error) {
+          console.error('Error updating booking status:', error);
+      }
+  };
+  
     return (
         <div>
           <div className="panel mt-6">
@@ -280,6 +292,7 @@ const NewBooking = () => {
                     >
                       {booking.customerName}
                     </p>
+                    
                     <p
                       style={{
                         margin: '5px 0',
@@ -297,24 +310,28 @@ const NewBooking = () => {
                     </p>
                   </div>
                   <p style={{ margin: '5px 0', color: '#555', display: 'inline-flex', alignItems: 'center' }}>
-                    <IconPhone style={{ marginRight: '8px' }} />{' '}
-                    <a
-                      href={`tel:${booking.phoneNumber}`}
-                      style={{
-                        color: '#2980b9',
-                        fontWeight: 'bold',
-                        textDecoration: 'underline',
-                        fontSize: '18px',
-                        fontFamily: 'Georgia, serif',
-                        transition: 'color 0.3s',
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = '#1a5276')}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = '#2980b9')}
-                    >
-                      {booking.phoneNumber}
-                    </a>
-                  </p>
+    <IconPhone style={{ marginRight: '8px' }} />{' '}
+    <a
+        href={`tel:${booking.phoneNumber}`}
+        style={{
+            color: '#2980b9',
+            fontWeight: 'bold',
+            textDecoration: 'underline',
+            fontSize: '18px',
+            fontFamily: 'Georgia, serif',
+            transition: 'color 0.3s',
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.color = '#1a5276')}
+        onMouseLeave={(e) => (e.currentTarget.style.color = '#2980b9')}
+        onClick={() => handleCallClick(booking.id)} // Add this line
+    >
+        {booking.phoneNumber}
+    </a>
+</p>
+
                   <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Pickup Location: {booking.pickupLocation.name}</p>
+                  <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Base Location: {booking.baseLocation.name}</p>
+
                   <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Dropoff Location: {booking.dropoffLocation.name}</p>
                   <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Total Distance: {booking.totalDistance}</p>
                   <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Service Type: {booking.serviceType}</p>
@@ -326,7 +343,7 @@ const NewBooking = () => {
                       marginTop: '10px',
                     }}
                   >
-                    Payable Amount: {booking.totalSalary}
+                    Payable Amount: {booking.updatedTotalSalary}
                   </p>
       
                   <button
@@ -431,143 +448,182 @@ const NewBooking = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 mt-6">
               <h5 className="font-semibold text-lg dark:text-white-light mb-5">Completed Bookings</h5>
               {completedBookings.map((booking) => (
-                <div
-                  key={booking.id}
-                  style={{
-                    border: '1px solid #ccc',
-                    padding: '20px',
-                    borderRadius: '10px',
-                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-                    marginBottom: '20px',
-                    backgroundColor: '#f9f9f9',
-                    transition: 'transform 0.3s ease-in-out',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-                >
-                  <p
-                    style={{
-                      fontSize: '22px',
-                      fontWeight: '700',
-                      marginBottom: '10px',
-                      color: '#2c3e50',
-                      fontFamily: 'Merriweather, serif',
-                    }}
-                  >
-                    {booking.customerName}
-                  </p>
-                  <p style={{ margin: '5px 0', color: '#34495e' }}>{booking.dateTime}</p>
-                  <p style={{ margin: '5px 0', color: '#555' }}>Phone Number: {booking.phoneNumber}</p>
-                  <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Pickup Location: {booking.pickupLocation.name}</p>
-                  <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Dropoff Location: {booking.dropoffLocation.name}</p>
-                  <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Distance from pickup to dropoff: {booking.distance}</p>
-                  <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Service Type: {booking.serviceType}</p>
-                  <p
-                    style={{
-                      color: '#c0392b',
-                      fontSize: '18px',
-                      fontWeight: 'bold',
-                      marginTop: '10px',
-                    }}
-                  >
-                    Payable Amount: {booking.totalSalary}
-                  </p>
-      
-                  <button
-                    className="btn btn-info"
-                    style={{
-                      marginTop: '10px',
-                      backgroundColor: '#3498db',
-                      color: '#fff',
-                      padding: '10px 20px',
-                      borderRadius: '5px',
-                      border: 'none',
-                      cursor: 'pointer',
-                      transition: 'background-color 0.3s ease',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2980b9')}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3498db')}
-                    onClick={() =>
-                      handleDriverDetails(
-                        booking.selectedDriver,
-                        booking.serviceType,
-                        booking.pickupLocation,
-                        booking.dropoffLocation,
-                        booking.id
-                      )
-                    }
-                  >
-                    View Driver Details
-                  </button>
-                  {driverDetailsMap[booking.id] && (
-                    <div>
-                      {driverDetailsMap[booking.id].salaryDetails && (
-                        <>
-                          <p className="mt-2">Basic Salary: {driverDetailsMap[booking.id].salaryDetails.basicSalary}</p>
-                          <p>Salary per KM: {driverDetailsMap[booking.id].salaryDetails.salaryPerKM}</p>
-                          <p>Basic Salary KM: {driverDetailsMap[booking.id].salaryDetails.basicSalaryKM}</p>
-      
-                          <p
-                            style={{
-                              color: '#c0392b',
-                              fontSize: '18px',
-                              fontWeight: 'bold',
-                              marginTop: '10px',
-                            }}
-                          >
-                            Total Salary: {driverDetailsMap[booking.id].totalDriverSalary.toFixed(2)}
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  )}
-      
-                  <div className="mt-4 flex justify-end">
-                    <button
-                      style={{
-                        backgroundColor: booking.status === 'Order Completed' ? '#bdc3c7' : '#27ae60',
-                        color: 'white',
-                        border: 'none',
-                        padding: '10px 20px',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                        marginRight: '10px',
-                        transition: 'background-color 0.3s ease',
-                      }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.backgroundColor = booking.status === 'Order Completed' ? '#95a5a6' : '#2ecc71')
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.backgroundColor = booking.status === 'Order Completed' ? '#bdc3c7' : '#27ae60')
-                      }
-                      onClick={() => handleOkClick(booking)}
-                      disabled={booking.status === 'Order Completed'}
-                    >
-                      Accept
-                    </button>
-                    <button
-                      style={{
-                        backgroundColor: booking.status === 'Order Completed' ? '#bdc3c7' : '#e74c3c',
-                        color: 'white',
-                        border: 'none',
-                        padding: '10px 20px',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                        transition: 'background-color 0.3s ease',
-                      }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.backgroundColor = booking.status === 'Order Completed' ? '#95a5a6' : '#c0392b')
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.backgroundColor = booking.status === 'Order Completed' ? '#bdc3c7' : '#e74c3c')
-                      }
-                      onClick={() => handleRejectClick(booking.id)}
-                      disabled={booking.status === 'Order Completed'}
-                    >
-                      Reject
-                    </button>
-                  </div>
-                </div>
+               <div
+               key={booking.id}
+               style={{
+                 border: '1px solid #ccc',
+                 padding: '20px',
+                 borderRadius: '10px',
+                 boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
+                 marginBottom: '20px',
+                 backgroundColor: '#f9f9f9',
+                 transition: 'transform 0.3s ease-in-out',
+               }}
+               onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+               onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+             >
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                 <p
+                   style={{
+                     fontSize: '22px',
+                     fontWeight: '700',
+                     marginBottom: '10px',
+                     color: '#2c3e50',
+                     fontFamily: 'Merriweather, serif',
+                   }}
+                 >
+                   {booking.customerName}
+                 </p>
+                 
+                 <p
+                   style={{
+                     margin: '5px 0',
+                     color: '#7f8c8d',
+                     marginLeft: 'auto',
+                     fontFamily: 'Georgia, serif',
+                     fontSize: '16px',
+                     padding: '2px 8px',
+                     borderRadius: '4px',
+                     backgroundColor: '#ecf0f1',
+                     border: '1px solid #bdc3c7',
+                   }}
+                 >
+                   {booking.dateTime}
+                 </p>
+               </div>
+               <p style={{ margin: '5px 0', color: '#555', display: 'inline-flex', alignItems: 'center' }}>
+ <IconPhone style={{ marginRight: '8px' }} />{' '}
+ <a
+     href={`tel:${booking.phoneNumber}`}
+     style={{
+         color: '#2980b9',
+         fontWeight: 'bold',
+         textDecoration: 'underline',
+         fontSize: '18px',
+         fontFamily: 'Georgia, serif',
+         transition: 'color 0.3s',
+     }}
+     onMouseEnter={(e) => (e.currentTarget.style.color = '#1a5276')}
+     onMouseLeave={(e) => (e.currentTarget.style.color = '#2980b9')}
+     onClick={() => handleCallClick(booking.id)} // Add this line
+ >
+     {booking.phoneNumber}
+ </a>
+</p>
+
+               <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Pickup Location: {booking.pickupLocation.name}</p>
+               <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Base Location: {booking.baseLocation.name}</p>
+
+               <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Dropoff Location: {booking.dropoffLocation.name}</p>
+               <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Total Distance: {booking.totalDistance}</p>
+               <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Service Type: {booking.serviceType}</p>
+               <p
+                 style={{
+                   color: '#c0392b',
+                   fontSize: '18px',
+                   fontWeight: 'bold',
+                   marginTop: '10px',
+                 }}
+               >
+                 Payable Amount: {booking.updatedTotalSalary}
+               </p>
+   
+               <button
+                 className="btn btn-info"
+                 style={{
+                   marginTop: '10px',
+                   backgroundColor: '#3498db',
+                   color: '#fff',
+                   padding: '10px 20px',
+                   borderRadius: '5px',
+                   border: 'none',
+                   cursor: 'pointer',
+                   transition: 'background-color 0.3s ease',
+                 }}
+                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2980b9')}
+                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3498db')}
+                 onClick={() =>
+                   handleDriverDetails(
+                     booking.selectedDriver,
+                     booking.serviceType,
+                     booking.pickupLocation,
+                     booking.dropoffLocation,
+                     booking.id
+                   )
+                 }
+               >
+                 View Driver Details
+               </button>
+               {driverDetailsMap[booking.id] && (
+                 <div>
+                   {driverDetailsMap[booking.id].salaryDetails && (
+                     <>
+                       <p className="mt-2">Basic Salary: {driverDetailsMap[booking.id].salaryDetails.basicSalary}</p>
+                       <p>Salary per KM: {driverDetailsMap[booking.id].salaryDetails.salaryPerKM}</p>
+                       <p>Basic Salary KM: {driverDetailsMap[booking.id].salaryDetails.basicSalaryKM}</p>
+                       <p>Total Distance: {driverDetailsMap[booking.id].totalDistance}</p>
+   
+                       <p
+                         style={{
+                           color: '#c0392b',
+                           fontSize: '18px',
+                           fontWeight: 'bold',
+                           marginTop: '10px',
+                         }}
+                       >
+                         Total Salary: {driverDetailsMap[booking.id].totalDriverSalary.toFixed(2)}
+                       </p>
+                     </>
+                   )}
+                 </div>
+               )}
+   
+               <div className="mt-4 flex justify-end">
+                 <button
+                   style={{
+                     backgroundColor: booking.status === 'Order Completed' ? '#bdc3c7' : '#27ae60',
+                     color: 'white',
+                     border: 'none',
+                     padding: '10px 20px',
+                     borderRadius: '5px',
+                     cursor: 'pointer',
+                     marginRight: '10px',
+                     transition: 'background-color 0.3s ease',
+                   }}
+                   onMouseEnter={(e) =>
+                     (e.currentTarget.style.backgroundColor = booking.status === 'Order Completed' ? '#95a5a6' : '#2ecc71')
+                   }
+                   onMouseLeave={(e) =>
+                     (e.currentTarget.style.backgroundColor = booking.status === 'Order Completed' ? '#bdc3c7' : '#27ae60')
+                   }
+                   onClick={() => handleOkClick(booking)}
+                   disabled={booking.status === 'Order Completed'}
+                 >
+                   Accept
+                 </button>
+                 <button
+                   style={{
+                     backgroundColor: booking.status === 'Order Completed' ? '#bdc3c7' : '#e74c3c',
+                     color: 'white',
+                     border: 'none',
+                     padding: '10px 20px',
+                     borderRadius: '5px',
+                     cursor: 'pointer',
+                     transition: 'background-color 0.3s ease',
+                   }}
+                   onMouseEnter={(e) =>
+                     (e.currentTarget.style.backgroundColor = booking.status === 'Order Completed' ? '#95a5a6' : '#c0392b')
+                   }
+                   onMouseLeave={(e) =>
+                     (e.currentTarget.style.backgroundColor = booking.status === 'Order Completed' ? '#bdc3c7' : '#e74c3c')
+                   }
+                   onClick={() => handleRejectClick(booking.id)}
+                   disabled={booking.status === 'Order Completed'}
+                 >
+                   Reject
+                 </button>
+               </div>
+             </div>
               ))}
             </div>
             <Link to={`/bookings/closedbooking?phone=${phone}`} className="link">
