@@ -59,7 +59,7 @@ const ClosedBooking = () => {
             case 'Rejected':
                 return { backgroundColor: 'red', color: 'white' };
             default:
-                return {};
+                return { backgroundColor: 'yellow', color: 'black' }; // Default to yellow for other statuses
         }
     };
 

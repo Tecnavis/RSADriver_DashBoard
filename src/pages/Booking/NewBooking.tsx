@@ -253,8 +253,8 @@ const NewBooking = () => {
         <div>
           <div className="panel mt-6">
             <h5 className="font-semibold text-lg dark:text-white-light mb-5">New Bookings</h5>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-             {nonCompletedBookings.map((booking) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 ">
+         {nonCompletedBookings.map((booking) => (
   <div
     key={booking.id}
     style={{
@@ -263,7 +263,7 @@ const NewBooking = () => {
       borderRadius: '10px',
       boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
       marginBottom: '20px',
-      backgroundColor: '#fff',
+      background: 'linear-gradient(135deg, #f3f4f6 0%, #e2e8f0 100%)',
       transition: 'transform 0.3s ease-in-out',
     }}
     onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
