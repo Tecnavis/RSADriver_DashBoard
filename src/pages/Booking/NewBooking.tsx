@@ -161,13 +161,15 @@ const NewBooking = () => {
     
             setSelectedBooking(booking);
     
+            const pickupPlaceName = pickupLocation?.name || null;
+
             // Navigate to pickup page
             navigate(`/pickup/${id}`, {
                 state: {
                     pickupLocation: {
-                        placename: pickupLocation.name || null,
-                        lat: pickupLocation.lat,
-                        lng: pickupLocation.lng,
+                        placename: pickupPlaceName,
+                        lat: pickupLocation?.lat,
+                        lng: pickupLocation?.lng,
                     },
                     customerName,
                     id,
@@ -215,40 +217,48 @@ const NewBooking = () => {
     };
 
     const handleDriverDetails = async (selectedDriverId, serviceType, pickupLocation, dropoffLocation, bookingId) => {
-        if (!currentLocation) {
-            console.error('Current location not available');
-            return;
-        }
-
-        try {
-            const distanceToPickup = await calculateDrivingDistance(currentLocation, pickupLocation);
-            const distancePickupToDropoff = await calculateDrivingDistance(pickupLocation, dropoffLocation);
-            const distanceDropoffToCurrent = await calculateDrivingDistance(dropoffLocation, currentLocation);
-
-            console.log("distanceToPickup", distanceToPickup);
-            console.log("distancePickupToDropoff", distancePickupToDropoff);
-            console.log("distanceDropoffToCurrent", distanceDropoffToCurrent);
-
-            const totalDistance = distanceToPickup + distancePickupToDropoff + distanceDropoffToCurrent;
-
-            const details = await fetchDriverDetails(selectedDriverId, serviceType);
-            if (details && details.salaryDetails) {
-                const totalDriverSalary = calculateDriverSalary(details.salaryDetails.basicSalary, details.salaryDetails.basicSalaryKM, totalDistance, details.salaryDetails.salaryPerKM);
-                setDriverDetailsMap((prevState) => ({
-                    ...prevState,
-                    [bookingId]: {
-                        ...details,
-                        totalDriverSalary,
-                        totalDistance,
-                    },
-                }));
-            } else {
-                console.error('Driver details or salary details are missing');
-            }
-        } catch (error) {
-            console.error('Error handling driver details: ', error);
-        }
-    };
+      if (!currentLocation) {
+          console.error('Current location not available');
+          return;
+      }
+  
+      try {
+          const distanceToPickup = await calculateDrivingDistance(currentLocation, pickupLocation);
+          const distancePickupToDropoff = await calculateDrivingDistance(pickupLocation, dropoffLocation);
+          const distanceDropoffToCurrent = await calculateDrivingDistance(dropoffLocation, currentLocation);
+  
+          console.log("distanceToPickup", distanceToPickup);
+          console.log("distancePickupToDropoff", distancePickupToDropoff);
+          console.log("distanceDropoffToCurrent", distanceDropoffToCurrent);
+  
+          const totalDistance = distanceToPickup + distancePickupToDropoff + distanceDropoffToCurrent;
+  
+          const details = await fetchDriverDetails(selectedDriverId, serviceType);
+          if (details && details.salaryDetails) {
+              const totalDriverSalary = calculateDriverSalary(details.salaryDetails.basicSalary, details.salaryDetails.basicSalaryKM, totalDistance, details.salaryDetails.salaryPerKM);
+  
+              // Update the Firestore document with totalDriverSalary
+              const bookingDocRef = doc(db, 'bookings', bookingId);
+              await updateDoc(bookingDocRef, {
+                  totalDriverSalary: totalDriverSalary,
+                  totalDistance: totalDistance,
+              });
+  
+              setDriverDetailsMap((prevState) => ({
+                  ...prevState,
+                  [bookingId]: {
+                      ...details,
+                      totalDriverSalary,
+                      totalDistance,
+                  },
+              }));
+          } else {
+              console.error('Driver details or salary details are missing');
+          }
+      } catch (error) {
+          console.error('Error handling driver details: ', error);
+      }
+  };
     return (
         <div>
           <div className="panel mt-6">
@@ -314,10 +324,14 @@ const NewBooking = () => {
       >
         {booking.phoneNumber}
       </a>
-    </p>
-    <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Pickup Location: {booking.pickupLocation.name}</p>
-    <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Dropoff Location: {booking.dropoffLocation.name}</p>
-    <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Total Distance: {booking.totalDistance}</p>
+    </p>   
+       <p style={{ margin: '5px 0', color: '#7f8c8d' }}>
+              Pickup Location: {booking.pickupLocation?.name || 'N/A'}
+            </p>
+            <p style={{ margin: '5px 0', color: '#7f8c8d' }}>
+              Dropoff Location: {booking.dropoffLocation?.name || 'N/A'}
+            </p>
+    <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Total Distance: {booking.distance}</p>
     <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Service Type: {booking.serviceType}</p>
     <p
       style={{
@@ -354,7 +368,7 @@ const NewBooking = () => {
         )
       }
     >
-      View Driver Details
+      View Driver Salary Details
     </button>
     {driverDetailsMap[booking.id] && (
       <div>
@@ -499,7 +513,7 @@ const NewBooking = () => {
                       )
                     }
                   >
-                    View Driver Details
+                    View Driver Salary Details
                   </button>
                   {driverDetailsMap[booking.id] && (
                     <div>
@@ -508,7 +522,8 @@ const NewBooking = () => {
                           <p className="mt-2">Basic Salary: {driverDetailsMap[booking.id].salaryDetails.basicSalary}</p>
                           <p>Salary per KM: {driverDetailsMap[booking.id].salaryDetails.salaryPerKM}</p>
                           <p>Basic Salary KM: {driverDetailsMap[booking.id].salaryDetails.basicSalaryKM}</p>
-      
+                          <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Total Distance: {booking.totalDistance}</p>
+
                           <p
                             style={{
                               color: '#c0392b',

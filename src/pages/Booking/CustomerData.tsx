@@ -49,10 +49,10 @@ const CustomerData = () => {
             tempErrors['vehicleNumber'] = 'Vehicle number is required';
             isValid = false;
         }
-        if (rcBookImages.length === 0) {
-            tempErrors['rcBookImages'] = 'At least one RC book image is required';
-            isValid = false;
-        }
+        // if (rcBookImages.length === 0) {
+        //     tempErrors['rcBookImages'] = 'At least one RC book image is required';
+        //     isValid = false;
+        // }
         if (vehicleImages.length === 0) {
             tempErrors['vehicleImages'] = 'At least one vehicle image is required';
             isValid = false;
@@ -157,157 +157,119 @@ const CustomerData = () => {
         }
     };
     
-    const inputStyle = {
-        padding: '0.5rem',
-        fontSize: '1rem',
-        width: '100%',
-        maxWidth: '20rem',
-        margin: '0 auto',
-        boxSizing: 'border-box',
-    };
-    const errorStyle = {
-        color: 'red',
-        fontSize: '0.8rem',
-    };
-    const buttonStyle = {
-        padding: '0.75rem 1.5rem',
-        fontSize: '1rem',
-        borderRadius: '0.5rem',
-        backgroundColor: '#28a745',
-        color: '#fff',
-        border: 'none',
-        cursor: 'pointer',
-    };
-    const removeButtonStyle = {
-        position: 'absolute', 
-        top: '0.5rem', 
-        right: '0.5rem', 
-        padding: '0.25rem', 
-        backgroundColor: 'red', 
-        color: '#fff', 
-        border: 'none', 
-        borderRadius: '50%', 
-        cursor: 'pointer'
-    };
+   
     return (
-        <div style={{ textAlign: 'center' }}>
-            <h1 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Customer Data</h1>
-            <div style={{ margin: '30px auto', maxWidth: '700px', width: '90%', padding: '20px', borderRadius: '5px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.5)' }}>
-                <div style={{ marginBottom: '1rem' }}>
-                    <label style={{ fontSize: '1.2rem', marginRight: '0.5rem' }}>Customer Name:</label>
-                    <input type="text" value={customerName} onChange={handleCustomerNameChange} style={inputStyle} />
-                    {errors.customerName && <p style={errorStyle}>{errors.customerName}</p>}
+        <div className="flex flex-col items-center">
+            <h1 className="text-3xl font-bold mb-6">Customer Data</h1>
+            <div className="w-full max-w-2xl bg-white p-6 rounded-lg shadow-lg">
+                <div className="mb-4">
+                    <label className="block text-lg font-medium mb-2">Customer Name:</label>
+                    <input 
+                        type="text" 
+                        value={customerName} 
+                        onChange={handleCustomerNameChange} 
+                        className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {errors.customerName && <p className="text-red-500 text-sm mt-1">{errors.customerName}</p>}
                 </div>
 
-                <div style={{ marginBottom: '1rem' }}>
-                    <label style={{ fontSize: '1.2rem', marginRight: '1.5rem' }}>Email:</label>
-                    <input
-                        type="email"
+                <div className="mb-4">
+                    <label className="block text-lg font-medium mb-2">Email:</label>
+                    <input 
+                        type="email" 
                         value={email}
                         onChange={handleEmailChange}
-                        style={{
-                            padding: '0.5rem',
-                            fontSize: '1rem',
-                            width: '100%',
-                            maxWidth: '20rem',
-                            margin: '0 auto',
-                            boxSizing: 'border-box',
-                        }}
+                        className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    {errors.email && <p style={errorStyle}>{errors.email}</p>}
+                    {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                 </div>
-                <div style={{ marginBottom: '1rem' }}>
-                    <label style={{ fontSize: '1.2rem', marginRight: '0.5rem' }}>Phone:</label>
-                    <input
-                        type="tel"
+
+                <div className="mb-4">
+                    <label className="block text-lg font-medium mb-2">Phone:</label>
+                    <input 
+                        type="tel" 
                         value={phone}
                         onChange={handlePhoneChange}
-                        style={{
-                            padding: '0.5rem',
-                            fontSize: '1rem',
-                            width: '100%', // Ensure the input takes up the full width
-                            maxWidth: '20rem', // Limit the maximum width to maintain readability
-                            margin: '0 auto', // Center the input horizontally
-                            boxSizing: 'border-box', // Include padding and border in the width
-                        }}
+                        className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    {errors.phone && <p style={errorStyle}>{errors.phone}</p>}
+                    {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
                 </div>
-                <div style={{ marginBottom: '1rem' }}>
-                    <label style={{ fontSize: '1.2rem', marginRight: '1.5rem' }}>Vehicle Number:</label>
-                    <input
-                        type="text"
+
+                <div className="mb-4">
+                    <label className="block text-lg font-medium mb-2">Vehicle Number:</label>
+                    <input 
+                        type="text" 
                         value={vehicleNumber}
                         onChange={handleVehicleNumberChange}
-                        style={{
-                            padding: '0.5rem',
-                            fontSize: '1rem',
-                            width: '100%',
-                            maxWidth: '20rem',
-                            margin: '0 auto',
-                            boxSizing: 'border-box',
-                        }}
+                        className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    {errors.vehicleNumber && <p style={errorStyle}>{errors.vehicleNumber}</p>}
+                    {errors.vehicleNumber && <p className="text-red-500 text-sm mt-1">{errors.vehicleNumber}</p>}
                 </div>
-                <label style={{ fontSize: '1.2rem', marginRight: '1.5rem' }}>Upload RC Book Images:</label>
-        <ImageUploading multiple={true} value={rcBookImages} onChange={handleRcBookImagesChange} maxNumber={maxNumber} dataURLKey="dataURL">
-            {({ imageList, onImageUpload, onImageRemove }) => (
-                <div>
-                    <button
-                        style={{ padding: '0.5rem 1rem', fontSize: '1rem', borderRadius: '0.5rem', backgroundColor: '#007bff', color: '#fff', border: 'none', marginBottom: '0.5rem' }}
-                        onClick={onImageUpload}
-                    >
-                        Upload RC Book Images
-                    </button>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-start' }}>
-                        {imageList.map((image, index) => (
-                            <div key={index} style={{ width: 'calc(33.333% - 10px)', margin: '5px', position: 'relative' }}>
-                                <img src={image.dataURL} alt={`RC Book Image ${index}`} style={{ width: '100%', height: 'auto', display: 'block' }} />
-                                <button
-                                                                      style={{ position: 'absolute', top: '0.15rem', right: '0.15rem', padding: '0.2rem', backgroundColor: 'red', color: '#fff', border: 'none', borderRadius: '25%', cursor: 'pointer' }}
 
-                                    onClick={() => onImageRemove(index)}
-                                >
-                                    X
-                                </button>
+                <div className="mb-4">
+                    <label className="block text-lg font-medium mb-2">Upload RC Book Images (Optional):</label>
+                    <ImageUploading multiple value={rcBookImages} onChange={handleRcBookImagesChange} maxNumber={maxNumber} dataURLKey="dataURL">
+                        {({ imageList, onImageUpload, onImageRemove }) => (
+                            <div>
+                               <button 
+    onClick={onImageUpload} 
+    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 focus:bg-blue-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none mb-2"
+>
+    Upload RC Book Images
+</button>
+
+                                <div className="flex flex-wrap">
+                                    {imageList.map((image, index) => (
+                                        <div key={index} className="relative w-1/3 p-2">
+                                            <img src={image.dataURL} alt={`RC Book Image ${index}`} className="w-full h-auto rounded-lg" />
+                                            <button 
+                                                onClick={() => onImageRemove(index)}
+                                                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 focus:outline-none"
+                                            >
+                                                X
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                        ))}
-                    </div>
-                    {errors.rcBookImages && <p style={{ color: 'red', fontSize: '0.8rem' }}>{errors.rcBookImages}</p>}
+                        )}
+                    </ImageUploading>
                 </div>
-            )}
-        </ImageUploading>
 
-        <label style={{ fontSize: '1.2rem', marginRight: '1.5rem', marginTop: '1rem' }}>Upload Vehicle Images:</label>
-        <ImageUploading multiple={true} value={vehicleImages} onChange={handleVehicleImagesChange} maxNumber={maxNumber} dataURLKey="dataURL">
-            {({ imageList, onImageUpload, onImageRemove }) => (
-                <div>
-                    <button
-                        style={{ padding: '0.5rem 1rem', fontSize: '1rem', borderRadius: '0.5rem', backgroundColor: '#007bff', color: '#fff', border: 'none', marginBottom: '0.5rem' }}
-                        onClick={onImageUpload}
-                    >
-                        Upload Vehicle Images
-                    </button>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-start' }}>
-                        {imageList.map((image, index) => (
-                            <div key={index} style={{ width: 'calc(33.333% - 10px)', margin: '5px', position: 'relative' }}>
-                                <img src={image.dataURL} alt={`Vehicle Image ${index}`} style={{ width: '100%', height: 'auto', display: 'block' }} />
-                                <button
-                                                                   style={{ position: 'absolute', top: '0.15rem', right: '0.15rem', padding: '0.2rem', backgroundColor: 'red', color: '#fff', border: 'none', borderRadius: '25%', cursor: 'pointer' }}
-
-                                    onClick={() => onImageRemove(index)}
+                <div className="mb-4">
+                    <label className="block text-lg font-medium mb-2">Upload Vehicle Images:</label>
+                    <ImageUploading multiple value={vehicleImages} onChange={handleVehicleImagesChange} maxNumber={maxNumber} dataURLKey="dataURL">
+                        {({ imageList, onImageUpload, onImageRemove }) => (
+                            <div>
+                                <button 
+                                    onClick={onImageUpload} 
+                                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none mb-2"
                                 >
-                                    X
+                                    Upload Vehicle Images
                                 </button>
+                                <div className="flex flex-wrap">
+                                    {imageList.map((image, index) => (
+                                        <div key={index} className="relative w-1/3 p-2">
+                                            <img src={image.dataURL} alt={`Vehicle Image ${index}`} className="w-full h-auto rounded-lg" />
+                                            <button 
+                                                onClick={() => onImageRemove(index)}
+                                                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 focus:outline-none"
+                                            >
+                                                X
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                                {errors.vehicleImages && <p className="text-red-500 text-sm mt-1">{errors.vehicleImages}</p>}
                             </div>
-                        ))}
-                    </div>
-                    {errors.vehicleImages && <p style={{ color: 'red', fontSize: '0.8rem' }}>{errors.vehicleImages}</p>}
+                        )}
+                    </ImageUploading>
                 </div>
-            )}
-        </ImageUploading>
-                <button style={{ ...buttonStyle, marginTop: '1rem' }} onClick={handleSubmit}>
+
+                <button 
+                    onClick={handleSubmit}
+                    className="w-full py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none"
+                >
                     Submit
                 </button>
             </div>

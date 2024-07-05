@@ -54,7 +54,7 @@ const CustomerVerification = () => {
     };
 
     const handleSubmit = async () => {
-        if (vehicleImages.length === 0 || fuelBillImages.length === 0 || !paymentStatus || !amount || !fuelBillAmount) {
+        if (vehicleImages.length === 0 ||  !paymentStatus || !amount ) {
             setErrorMessage('Please upload all required images and fill in all fields before submitting.');
             return;
         }

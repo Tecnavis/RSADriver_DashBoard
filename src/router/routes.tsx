@@ -31,6 +31,7 @@ import Pickup from '../pages/Booking/Pickup';
 import CustomerData from '../pages/Booking/CustomerData';
 import Dropoff from '../pages/Booking/Dropoff';
 import CustomerVerification from '../pages/Booking/CustomerVerification';
+import CashCollectionReport from '../pages/CashCollectionReport.tsx/CashCollectionReport';
 // import Boo from '../pages/Booking/DriverSalary';
 // import DriverSalary from '../pages/Booking/DriverSalary';
 
@@ -217,6 +218,17 @@ const routes = [
     {
         path: '/apps/calendar',
         element: <Calendar />,
+    },
+    // hjvghv
+    {
+        path: "/users/driver/driverdetails/:id",
+        element: <DriverDetails />,
+    },
+       //Driver Reports
+       {
+        path: '/cashcollection',
+        element: <CashCollectionReport />,
+        
     },
     // preview page
     {

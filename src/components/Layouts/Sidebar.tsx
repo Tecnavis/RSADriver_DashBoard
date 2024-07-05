@@ -82,21 +82,21 @@ const Sidebar = () => {
 
     return (
         <div className={semidark ? 'dark' : ''}>
-             <nav
+            <nav
                 className={`sidebar fixed min-h-screen h-full top-0 bottom-0 w-[260px] shadow-[5px_0_25px_0_rgba(94,92,154,0.1)] z-50 transition-all duration-300 ${semidark ? 'text-white-dark' : ''}`}
             >
                 <div className="bg-white dark:bg-black h-full">
                     <div className="flex justify-between items-center px-4">
                         <NavLink to="/" className="main-logo flex items-center shrink-0">
-                        <img className="w-48 mx-auto p-3" src="/assets/images/auth/rsa-png.png" alt="logo" />
+                            <img className="w-48 mx-auto p-3" src="/assets/images/auth/rsa-png.png" alt="logo" />
                             {/* <span className="text-2xl ltr:ml-1.5 rtl:mr-1.5 font-semibold align-middle lg:inline dark:text-white-light">R<span className='text-danger'>S</span>A</span> */}
                         </NavLink>
-                 {/* <div className="bg-white dark:bg-black h-full">
+                        {/* <div className="bg-white dark:bg-black h-full">
                     <div className="flex justify-between items-center">
                         <NavLink to="/" className=" flex items-center">
                             <img className=" flex-none" src='/assets/images/auth/rsa-png.png' alt="logo" />
                         </NavLink> */}
-                {/* <div className="bg-white dark:bg-black h-full" >
+                        {/* <div className="bg-white dark:bg-black h-full" >
                     <div className="flex justify-between items-center">
                         <NavLink to="/" className="main-logo flex items-center">
                             <img className="flex-none" src='/assets/images/auth/rsa-png.png' alt="logo" />
@@ -124,19 +124,19 @@ const Sidebar = () => {
                                         <IconCaretDown />
                                     </div>
                                 </button> */}
-  <h2 className="py-3 px-7 flex items-center uppercase font-extrabold bg-white-light/30 dark:bg-dark dark:bg-opacity-[0.08] -mx-4 mb-1">
-                                <IconMinus className="w-4 h-5 flex-none hidden" />
-                                <span>
-                                   <Link to='/index'> Dashboard</Link>
-                                    {/* {t('user_and_pages')} */}
+                                <h2 className="py-3 px-7 flex items-center uppercase font-extrabold bg-white-light/30 dark:bg-dark dark:bg-opacity-[0.08] -mx-4 mb-1">
+                                    <IconMinus className="w-4 h-5 flex-none hidden" />
+                                    <span>
+                                        <Link to="/index"> Dashboard</Link>
+                                        {/* {t('user_and_pages')} */}
                                     </span>
-                            </h2>
+                                </h2>
                                 {/* <AnimateHeight duration={300} height={currentMenu === 'dashboard' ? 'auto' : 0}>
                                     <ul className="sub-menu text-gray-500"> */}
-                                        {/* <li>
+                                {/* <li>
                                             <NavLink to="/index">{t('sales')}</NavLink>
                                         </li> */}
-                                        {/* <li>
+                                {/* <li>
                                             <NavLink to="/analytics">{t('analytics')}</NavLink>
                                         </li>
                                         <li>
@@ -145,12 +145,11 @@ const Sidebar = () => {
                                         <li>
                                             <NavLink to="/crypto">{t('crypto')}</NavLink>
                                         </li> */}
-                                    {/* </ul>
+                                {/* </ul>
                                 </AnimateHeight> */}
                             </li>
 
-
-{/* 
+                            {/* 
                             <h2 className="py-3 px-7 flex items-center uppercase font-extrabold bg-white-light/30 dark:bg-dark dark:bg-opacity-[0.08] -mx-4 mb-1">
                                 <IconMinus className="w-4 h-5 flex-none hidden" />
                                 <span>
@@ -195,19 +194,15 @@ const Sidebar = () => {
                                     </ul>
                                 </AnimateHeight>
                             </li> */}
-    
-
-
-                            <h2 className="py-3 px-7 flex items-center uppercase font-extrabold bg-white-light/30 dark:bg-dark dark:bg-opacity-[0.08] -mx-4 mb-1">
-                                <IconMinus className="w-4 h-5 flex-none hidden" />
-                                <span>
-                                    Bookings
-                                    {/* {t('user_and_pages')} */}
-                                    </span>
-                            </h2>
 
                             <li className="menu nav-item">
-                                <button type="button" className={`${currentMenu === 'bookings' ? 'active' : ''} nav-link group w-full`} onClick={() => toggleMenu('bookings')}>
+                                <button
+                                    type="button"
+                                    className={`${
+                                        currentMenu === 'bookings' ? 'active' : ''
+                                    } nav-link group w-full py-3 px-7 flex items-center uppercase font-extrabold bg-white-light/30 dark:bg-dark dark:bg-opacity-[0.08] -mx-4 mb-1`}
+                                    onClick={() => toggleMenu('bookings')}
+                                >
                                     <div className="flex items-center">
                                         <IconBook className="group-hover:!text-primary shrink-0" />
                                         <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">Bookings</span>
@@ -219,8 +214,7 @@ const Sidebar = () => {
                                 </button>
 
                                 <AnimateHeight duration={300} height={currentMenu === 'bookings' ? 'auto' : 0}>
-                                <ul className="sub-menu text-gray-500">
-                                
+                                    <ul className="sub-menu text-gray-500">
                                         <li>
                                             <NavLink to="/bookings/newbooking">Bookings </NavLink>
                                         </li>
@@ -239,20 +233,17 @@ const Sidebar = () => {
                                         <li>
                                             <NavLink to="/bookings/invoicedbooking">Invoiced Bookings</NavLink>
                                         </li> */}
-                                      
                                     </ul>
                                 </AnimateHeight>
                             </li>
-                            <h2 className="py-3 px-7 flex items-center uppercase font-extrabold bg-white-light/30 dark:bg-dark dark:bg-opacity-[0.08] -mx-4 mb-1">
+                            {/* <h2 className="py-3 px-7 flex items-center uppercase font-extrabold bg-white-light/30 dark:bg-dark dark:bg-opacity-[0.08] -mx-4 mb-1">
                                 <IconMinus className="w-4 h-5 flex-none hidden" />
                                 <span>
                                  Profile 
                                     </span>
-                            </h2>
+                            </h2> */}
 
-                           
-
-                            <li className="menu nav-item">
+                            {/* <li className="menu nav-item">
                                 <button type="button" className={`${currentMenu === 'profile' ? 'active' : ''} nav-link group w-full`} onClick={() => toggleMenu('profile')}>
                                     <div className="flex items-center">
                                         <IconMenuUsers className="group-hover:!text-primary shrink-0" />
@@ -265,20 +256,114 @@ const Sidebar = () => {
                                 </button>
 
                                 <AnimateHeight duration={300} height={currentMenu === 'profile' ? 'auto' : 0}>
-                                <ul className="sub-menu text-gray-500">
-                                
-                                <li>
+                                    <ul className="sub-menu text-gray-500">
+                                        <li>
                                             <NavLink to="/users/user-account-settings">Profile Settings</NavLink>
                                         </li>
-                                       
-                                         <li>
+
+                                        <li>
                                             <NavLink to="/users/profile">Profile</NavLink>
-                                        </li> 
+                                        </li>
                                     </ul>
-                                
+                                </AnimateHeight>
+                            </li> */}
+                            <li className="menu nav-item ">
+                                <button
+                                    type="button"
+                                    className={`${
+                                        currentMenu === 'profile' ? 'active' : ''
+                                    } nav-link group w-full py-3 px-7 flex items-center uppercase font-extrabold bg-white-light/30 dark:bg-dark dark:bg-opacity-[0.08] -mx-4 mb-1`}
+                                    onClick={() => toggleMenu('profile')}
+                                >
+                                    <div className="flex items-center">
+                                        <IconMenuUsers className="group-hover:!text-primary shrink-0" />
+                                        <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">
+                                            {' '}
+                                            &nbsp;profile &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{' '}
+                                        </span>
+                                    </div>
+
+                                    <div className={currentMenu !== 'profile' ? 'rtl:rotate-90 -rotate-90' : ''}>
+                                        <IconCaretDown />
+                                    </div>
+                                </button>
+
+                                <AnimateHeight duration={300} height={currentMenu === 'profile' ? 'auto' : 0}>
+                                <ul className="sub-menu text-gray-500">
+                                        <li>
+                                            <NavLink to="/users/user-account-settings">Profile Settings</NavLink>
+                                        </li>
+
+                                        <li>
+                                            <NavLink to="/users/profile">Profile</NavLink>
+                                        </li>
+                                    </ul>
+                                </AnimateHeight>
+                            </li>
+                            {/* <h2 className="py-3 px-7 flex items-center uppercase font-extrabold bg-white-light/30 dark:bg-dark dark:bg-opacity-[0.08] -mx-4 mb-1">
+                                <IconMinus className="w-4 h-5 flex-none hidden" />
+                                <span>
+                                    Reports
+                                </span>
+                            </h2> */}
+
+                            <li className="menu nav-item ">
+                                <button
+                                    type="button"
+                                    className={`${
+                                        currentMenu === 'driverreport' ? 'active' : ''
+                                    } nav-link group w-full py-3 px-7 flex items-center uppercase font-extrabold bg-white-light/30 dark:bg-dark dark:bg-opacity-[0.08] -mx-4 mb-1`}
+                                    onClick={() => toggleMenu('driverreport')}
+                                >
+                                    <div className="flex items-center">
+                                        <IconMenuInvoice className="group-hover:!text-primary shrink-0" />
+                                        <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">
+                                            {' '}
+                                            &nbsp; Driver Reports &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{' '}
+                                        </span>
+                                    </div>
+
+                                    <div className={currentMenu !== 'driverreport' ? 'rtl:rotate-90 -rotate-90' : ''}>
+                                        <IconCaretDown />
+                                    </div>
+                                </button>
+
+                                <AnimateHeight duration={300} height={currentMenu === 'driverreport' ? 'auto' : 0}>
+                                    <ul className="sub-menu text-gray-500">
+                                        <li>
+                                            <NavLink to="/cashcollection">Driver Reports</NavLink>
+                                        </li>
+                                    </ul>
                                 </AnimateHeight>
                             </li>
 
+                            {/* <li className="menu nav-item">
+                                <button type="button" className={`${currentMenu === 'financial' ? 'active' : ''} nav-link group w-full`} onClick={() => toggleMenu('financial')}>
+                                    <div className="flex items-center">
+                                        <IconMenuInvoice className="group-hover:!text-primary shrink-0" />
+                                        <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">Financial Reports</span>
+                                    </div>
+
+                                    <div className={currentMenu !== 'financial' ? 'rtl:rotate-90 -rotate-90' : ''}>
+                                        <IconCaretDown />
+                                    </div>
+                                </button>
+
+                                <AnimateHeight duration={300} height={currentMenu === 'financial' ? 'auto' : 0}>
+                                    <ul className="sub-menu text-gray-500">
+                                        <li>
+                                            <NavLink to="/financial/balance">Balance Sheet</NavLink>
+                                        </li>
+                                        <li>
+                                            <NavLink to="/financial/profit">Profit and loss Report</NavLink>
+                                        </li>
+                                        <li>
+                                            <NavLink to="/financial/ledger">Ledger Report</NavLink>
+                                        </li>
+                                      
+                                    </ul>
+                                </AnimateHeight>
+                            </li> */}
                             {/* <h2 className="py-3 px-7 flex items-center uppercase font-extrabold bg-white-light/30 dark:bg-dark dark:bg-opacity-[0.08] -mx-4 mb-1">
                                 <IconMinus className="w-4 h-5 flex-none hidden" />
                                 <span>
@@ -309,7 +394,6 @@ const Sidebar = () => {
                                 </AnimateHeight>
                                
                             </li> */}
-
 
                             {/* <h2 className="py-3 px-7 flex items-center uppercase font-extrabold bg-white-light/30 dark:bg-dark dark:bg-opacity-[0.08] -mx-4 mb-1">
                                 <IconMinus className="w-4 h-5 flex-none hidden" />
@@ -347,9 +431,6 @@ const Sidebar = () => {
                
                                 </li> */}
 
-
-
-                  
                             {/* <li className="menu nav-item">
                                 <button type="button" className={`${currentMenu === 'receivable' ? 'active' : ''} nav-link group w-full`} onClick={() => toggleMenu('receivable')}>
                                     <div className="flex items-center">
@@ -385,14 +466,14 @@ const Sidebar = () => {
                                 <span>
                                     About
                                     {/* {t('user_and_pages')} */}
-                                    </span>
+                                </span>
                             </h2>
                             {/* <h2 className="py-3 px-7 flex items-center uppercase font-extrabold bg-white-light/30 dark:bg-dark dark:bg-opacity-[0.08] -mx-4 mb-1">
                                 <IconMinus className="w-4 h-5 flex-none hidden" />
                                 <span>{t('apps')}</span>
                             </h2> */}
 
-                             {/* <li className="nav-item">
+                            {/* <li className="nav-item">
                                 <ul>
                                     <li className="nav-item">
                                         <NavLink to="/apps/chat" className="group">
@@ -488,7 +569,7 @@ const Sidebar = () => {
                                 <IconMinus className="w-4 h-5 flex-none hidden" />
                                 <span>{t('user_interface')}</span>
                             </h2> */}
-{/* 
+                            {/* 
                             <li className="menu nav-item">
                                 <button type="button" className={`${currentMenu === 'component' ? 'active' : ''} nav-link group w-full`} onClick={() => toggleMenu('component')}>
                                     <div className="flex items-center">
@@ -639,7 +720,7 @@ const Sidebar = () => {
                                 </NavLink>
                             </li> */}
 
-                             {/* <li className="menu nav-item">
+                            {/* <li className="menu nav-item">
                                 <NavLink to="/font-icons" className="group">
                                     <div className="flex items-center">
                                         <IconMenuFontIcons className="group-hover:!text-primary shrink-0" />
@@ -655,7 +736,7 @@ const Sidebar = () => {
                                     </div>
                                 </NavLink>
                             </li> */}
-{/* 
+                            {/* 
                             <h2 className="py-3 px-7 flex items-center uppercase font-extrabold bg-white-light/30 dark:bg-dark dark:bg-opacity-[0.08] -mx-4 mb-1">
                                 <IconMinus className="w-4 h-5 flex-none hidden" />
                                 <span>{t('tables_and_forms')}</span>
@@ -720,7 +801,7 @@ const Sidebar = () => {
                                     </ul>
                                 </AnimateHeight>
                             </li> */}
-{/* 
+                            {/* 
                             <li className="menu nav-item">
                                 <button type="button" className={`${currentMenu === 'forms' ? 'active' : ''} nav-link group w-full`} onClick={() => toggleMenu('forms')}>
                                     <div className="flex items-center">
@@ -784,8 +865,6 @@ const Sidebar = () => {
                                 </AnimateHeight>
                             </li> */}
 
-                            
-
                             {/* <li className="menu nav-item">
                                 <button type="button" className={`${currentMenu === 'page' ? 'active' : ''} nav-link group w-full`} onClick={() => toggleMenu('page')}>
                                     <div className="flex items-center">
@@ -798,7 +877,7 @@ const Sidebar = () => {
                                     </div>
                                 </button> */}
 
-                                {/* <AnimateHeight duration={300} height={currentMenu === 'page' ? 'auto' : 0}>
+                            {/* <AnimateHeight duration={300} height={currentMenu === 'page' ? 'auto' : 0}>
                                     <ul className="sub-menu text-gray-500">
                                         <li>
                                             <NavLink to="/pages/knowledge-base">{t('knowledge_base')}</NavLink>
