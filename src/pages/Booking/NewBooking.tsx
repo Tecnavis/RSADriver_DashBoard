@@ -63,27 +63,27 @@ const NewBooking = () => {
         fetchCurrentLocation();
     }, []);
 
-    const calculateDrivingDistance = (origin, destination) => {
-        return new Promise((resolve, reject) => {
-            const directionsService = new google.maps.DirectionsService();
-            directionsService.route(
-                {
-                    origin,
-                    destination,
-                    travelMode: google.maps.TravelMode.DRIVING,
-                },
-                (response, status) => {
-                    if (status === 'OK') {
-                        const route = response.routes[0];
-                        const distance = route.legs[0].distance.value / 1000; // distance in kilometers
-                        resolve(distance);
-                    } else {
-                        reject(`Directions request failed due to ${status}`);
-                    }
-                }
-            );
-        });
-    };
+    // const calculateDrivingDistance = (origin, destination) => {
+    //     return new Promise((resolve, reject) => {
+    //         const directionsService = new google.maps.DirectionsService();
+    //         directionsService.route(
+    //             {
+    //                 origin,
+    //                 destination,
+    //                 travelMode: google.maps.TravelMode.DRIVING,
+    //             },
+    //             (response, status) => {
+    //                 if (status === 'OK') {
+    //                     const route = response.routes[0];
+    //                     const distance = route.legs[0].distance.value / 1000; // distance in kilometers
+    //                     resolve(distance);
+    //                 } else {
+    //                     reject(`Directions request failed due to ${status}`);
+    //                 }
+    //             }
+    //         );
+    //     });
+    // };
 
     const fetchDriverDetails = async (driverId, serviceType) => {
         try {
@@ -163,7 +163,6 @@ const NewBooking = () => {
     
             const pickupPlaceName = pickupLocation?.name || null;
 
-            // Navigate to pickup page
             navigate(`/pickup/${id}`, {
                 state: {
                     pickupLocation: {
@@ -171,6 +170,7 @@ const NewBooking = () => {
                         lat: pickupLocation?.lat,
                         lng: pickupLocation?.lng,
                     },
+                    
                     customerName,
                     id,
                     totalSalary,
@@ -201,64 +201,73 @@ const NewBooking = () => {
         }
     };
 
-    const calculateDriverSalary = (basicSalary, basicSalaryKM, totalDistance, salaryPerKM) => {
-        const numericBasicSalary = parseFloat(basicSalary);
-        const numericBasicSalaryKM = parseFloat(basicSalaryKM);
-        const numericTotalDistance = parseFloat(totalDistance);
-        const numericSalaryPerKM = parseFloat(salaryPerKM);
+    // const calculateDriverSalary = (basicSalary, basicSalaryKM, totalDistance, salaryPerKM) => {
+    //     const numericBasicSalary = parseFloat(basicSalary);
+    //     const numericBasicSalaryKM = parseFloat(basicSalaryKM);
+    //     const numericTotalDistance = parseFloat(totalDistance);
+    //     const numericSalaryPerKM = parseFloat(salaryPerKM);
 
-        if (isNaN(numericBasicSalary) || isNaN(numericBasicSalaryKM) || isNaN(numericTotalDistance) || isNaN(numericSalaryPerKM)) {
-            console.error('Invalid numeric values for salary calculation');
-            return 0;
-        }
+    //     if (isNaN(numericBasicSalary) || isNaN(numericBasicSalaryKM) || isNaN(numericTotalDistance) || isNaN(numericSalaryPerKM)) {
+    //         console.error('Invalid numeric values for salary calculation');
+    //         return 0;
+    //     }
 
-        const excessKm = Math.max(0, numericTotalDistance - numericBasicSalaryKM);
-        return numericBasicSalary + excessKm * numericSalaryPerKM;
-    };
+    //     const excessKm = Math.max(0, numericTotalDistance - numericBasicSalaryKM);
+    //     return numericBasicSalary + excessKm * numericSalaryPerKM;
+    // };
 
-    const handleDriverDetails = async (selectedDriverId, serviceType, pickupLocation, dropoffLocation, bookingId) => {
-      if (!currentLocation) {
-          console.error('Current location not available');
-          return;
-      }
+  //   const handleDriverDetails = async (selectedDriverId, serviceType, pickupLocation, dropoffLocation, bookingId) => {
+  //     if (!currentLocation) {
+  //         console.error('Current location not available');
+  //         return;
+  //     }
   
-      try {
-          const distanceToPickup = await calculateDrivingDistance(currentLocation, pickupLocation);
-          const distancePickupToDropoff = await calculateDrivingDistance(pickupLocation, dropoffLocation);
-          const distanceDropoffToCurrent = await calculateDrivingDistance(dropoffLocation, currentLocation);
+  //     try {
+  //         const distanceToPickup = await calculateDrivingDistance(currentLocation, pickupLocation);
+  //         const distancePickupToDropoff = await calculateDrivingDistance(pickupLocation, dropoffLocation);
+  //         const distanceDropoffToCurrent = await calculateDrivingDistance(dropoffLocation, currentLocation);
   
-          console.log("distanceToPickup", distanceToPickup);
-          console.log("distancePickupToDropoff", distancePickupToDropoff);
-          console.log("distanceDropoffToCurrent", distanceDropoffToCurrent);
+  //         console.log("distanceToPickup", distanceToPickup);
+  //         console.log("distancePickupToDropoff", distancePickupToDropoff);
+  //         console.log("distanceDropoffToCurrent", distanceDropoffToCurrent);
   
-          const totalDistance = distanceToPickup + distancePickupToDropoff + distanceDropoffToCurrent;
+  //         const totalDistance = distanceToPickup + distancePickupToDropoff + distanceDropoffToCurrent;
   
-          const details = await fetchDriverDetails(selectedDriverId, serviceType);
-          if (details && details.salaryDetails) {
-              const totalDriverSalary = calculateDriverSalary(details.salaryDetails.basicSalary, details.salaryDetails.basicSalaryKM, totalDistance, details.salaryDetails.salaryPerKM);
+  //         const details = await fetchDriverDetails(selectedDriverId, serviceType);
+  //         if (details && details.salaryDetails) {
+  //             const totalDriverSalary = calculateDriverSalary(details.salaryDetails.basicSalary, details.salaryDetails.basicSalaryKM, totalDistance, details.salaryDetails.salaryPerKM);
   
-              // Update the Firestore document with totalDriverSalary
-              const bookingDocRef = doc(db, 'bookings', bookingId);
-              await updateDoc(bookingDocRef, {
-                  totalDriverSalary: totalDriverSalary,
-                  totalDistance: totalDistance,
-              });
+  //             // Update the Firestore document with totalDriverSalary
+  //             const bookingDocRef = doc(db, 'bookings', bookingId);
+  //             await updateDoc(bookingDocRef, {
+  //                 totalDriverSalary: totalDriverSalary,
+  //                 totalDistance: totalDistance,
+  //             });
   
-              setDriverDetailsMap((prevState) => ({
-                  ...prevState,
-                  [bookingId]: {
-                      ...details,
-                      totalDriverSalary,
-                      totalDistance,
-                  },
-              }));
-          } else {
-              console.error('Driver details or salary details are missing');
-          }
-      } catch (error) {
-          console.error('Error handling driver details: ', error);
-      }
-  };
+  //             setDriverDetailsMap((prevState) => ({
+  //                 ...prevState,
+  //                 [bookingId]: {
+  //                     ...details,
+  //                     totalDriverSalary,
+  //                     totalDistance,
+  //                 },
+  //             }));
+  //         } else {
+  //             console.error('Driver details or salary details are missing');
+  //         }
+  //     } catch (error) {
+  //         console.error('Error handling driver details: ', error);
+  //     }
+  // };
+  const handlePhoneClick = async (bookingId: string) => {
+    try {
+        await updateDoc(doc(db, 'bookings', bookingId), {
+            status: 'called to customer',
+        });
+    } catch (error) {
+        console.error('Error updating booking status: ', error);
+    }
+};
     return (
         <div>
           <div className="panel mt-6">
@@ -307,8 +316,9 @@ const NewBooking = () => {
         {booking.dateTime}
       </p>
     </div>
-    <p style={{ margin: '5px 0', color: '#555', display: 'inline-flex', alignItems: 'center' }}>
-      <IconPhone style={{ marginRight: '8px' }} />{' '}
+    <p style={{ margin: '5px 0', color: '#555', display: 'inline-flex', alignItems: 'center' }}
+onClick={() => handlePhoneClick(booking.id)}
+>      <IconPhone style={{ marginRight: '8px' }} />{' '}
       <a
         href={`tel:${booking.phoneNumber}`}
         style={{
@@ -333,6 +343,8 @@ const NewBooking = () => {
             </p>
     <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Total Distance: {booking.distance}</p>
     <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Service Type: {booking.serviceType}</p>
+    <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Total Driver Salary: {booking.totalDriverSalary}</p>
+
     <p
       style={{
         color: '#c0392b',
@@ -344,7 +356,7 @@ const NewBooking = () => {
       Payable Amount: {booking.updatedTotalSalary}
     </p>
 
-    <button
+    {/* <button
       className="btn btn-info"
       style={{
         marginTop: '10px',
@@ -369,8 +381,8 @@ const NewBooking = () => {
       }
     >
       View Driver Salary Details
-    </button>
-    {driverDetailsMap[booking.id] && (
+    </button> */}
+    {/* {driverDetailsMap[booking.id] && (
       <div>
         {driverDetailsMap[booking.id].salaryDetails && (
           <>
@@ -392,7 +404,7 @@ const NewBooking = () => {
           </>
         )}
       </div>
-    )}
+    )} */}
 
     <div className="mt-4 flex justify-end">
       <button
@@ -489,7 +501,7 @@ const NewBooking = () => {
                     Payable Amount: {booking.updatedTotalSalary}
                   </p>
       
-                  <button
+                  {/* <button
                     className="btn btn-info"
                     style={{
                       marginTop: '10px',
@@ -514,8 +526,8 @@ const NewBooking = () => {
                     }
                   >
                     View Driver Salary Details
-                  </button>
-                  {driverDetailsMap[booking.id] && (
+                  </button> */}
+                  {/* {driverDetailsMap[booking.id] && (
                     <div>
                       {driverDetailsMap[booking.id].salaryDetails && (
                         <>
@@ -537,7 +549,7 @@ const NewBooking = () => {
                         </>
                       )}
                     </div>
-                  )}
+                  )} */}
       
                   <div className="mt-4 flex justify-end">
                     <button
