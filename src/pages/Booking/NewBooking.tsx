@@ -3,7 +3,7 @@ import { getFirestore, collection, getDocs, updateDoc, addDoc, query, where } fr
 import { getDoc, doc } from 'firebase/firestore';
 import { useNavigate, Link } from 'react-router-dom';
 import IconPhone from '../../components/Icon/IconPhone';
-
+import { useUserContext } from '../../context/UserContext';
 type RecordData = {
     index: number;
     customerName: string;
@@ -24,8 +24,9 @@ type RecordData = {
 
 const NewBooking = () => {
     const driverId = localStorage.getItem('driverId');
-    const phone = localStorage.getItem('phone');
+    // const phone = localStorage.getItem('phone');
     const password = localStorage.getItem('password'); 
+    const {phone} = useUserContext();
     console.log('driverId', driverId);
     console.log('phone', phone);
 
@@ -62,7 +63,11 @@ const NewBooking = () => {
     useEffect(() => {
         fetchCurrentLocation();
     }, []);
-
+useEffect(()=>{
+     if(!phone){
+      navigate('/login')
+     }
+},[phone,navigate])
     // const calculateDrivingDistance = (origin, destination) => {
     //     return new Promise((resolve, reject) => {
     //         const directionsService = new google.maps.DirectionsService();

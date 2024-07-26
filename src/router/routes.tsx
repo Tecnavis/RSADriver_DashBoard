@@ -3,6 +3,7 @@ import UserAdd from '../pages/Users/UserAdd';
 import { Navigate } from 'react-router-dom';
 // import Booking from '../pages/Booking/Booking';
 import NewBooking from '../pages/Booking/NewBooking';
+// import PrivateRoute from './PrivateRoute';
 import CancelledBooking from '../pages/Booking/CancelledBooking';
 // import ApprovedBoking from '../pages/Booking/ApprovedBoking';
 import ClosedBooking from '../pages/Booking/ClosedBooking';
@@ -34,7 +35,6 @@ import CustomerVerification from '../pages/Booking/CustomerVerification';
 import CashCollectionReport from '../pages/CashCollectionReport.tsx/CashCollectionReport';
 // import Boo from '../pages/Booking/DriverSalary';
 // import DriverSalary from '../pages/Booking/DriverSalary';
-
 
 const Index = lazy(() => import('../pages/Index'));
 const Analytics = lazy(() => import('../pages/Analytics'));
@@ -157,20 +157,18 @@ const routes = [
     //       </Suspense>
     //     ),
     //   },
-       
-   
+
     {
         path: '/',
         element: <LoginCover />,
         layout: 'blank',
-
     },
- 
+
     {
         path: '/index',
         element: <Index />,
     },
-   
+
     // analytics page
     {
         path: '/analytics',
@@ -221,14 +219,13 @@ const routes = [
     },
     // hjvghv
     {
-        path: "/users/driver/driverdetails/:id",
+        path: '/users/driver/driverdetails/:id',
         element: <DriverDetails />,
     },
-       //Driver Reports
-       {
+    //Driver Reports
+    {
         path: '/cashcollection',
         element: <CashCollectionReport />,
-        
     },
     // preview page
     {
@@ -497,13 +494,13 @@ const routes = [
         path: '/users/company-add/:id',
         element: <CompanyAdd />,
     },
-   
+
     {
         path: '/users/user-account-settings',
         element: <AccountSetting />,
     },
     {
-        path: "/users/driver/driverdetails/:id",
+        path: '/users/driver/driverdetails/:id',
         element: <DriverDetails />,
     },
     //Booking pages
@@ -540,70 +537,69 @@ const routes = [
     //     path: "/bookings/newbooking/viewmore/:id",
     //     element: <ViewMore />,
     // },
- 
-// ShowRoom
-{
-    path: 'showrooms/showroom',
-    element: <ShowRoom />,
-},
-{
-    path: 'showrooms/show-room',
-    element: <ShowRoomMap/>,
-},
-// service
-{
-    path: '/service/service-type',
-    element: <ServiceType />,
-},
-{
-    path: '/service/adjustment',
-    element: <Adjustment />,
-},
-{
-    path: '/service/tarrif',
-    element: <Tarrif />,
-},
-// Reports Page
-// General
-{
-    path: '/general/expense',
-    element: <ExpenseSummery />,
-},
-{
-    path: '/general/sales',
-    element: <SalesSummery />,
-},
-// Financial
-{
-    path: '/financial/balance',
-    element: <BalanceSheet />,
-},
-{
-    path: '/financial/ledger',
-    element: <Ledger />,
-},
-{
-    path: '/financial/profit',
-    element: <ProfitLoss />,
-},
-// Receivable
-{
-    path: '/receivable/comcusoutstanding',
-    element: <ComCusOutstanding />,
-},
-{
-    path: '/receivable/comcuswise',
-    element: <ComCusWise />,
-},
-{
-    path: '/receivable/invoicewise',
-    element: <InvoiceWiseSheet />,
-},
-{
-    path: '/receivable/payment',
-    element: <PaymentReceived />,
-},
 
+    // ShowRoom
+    {
+        path: 'showrooms/showroom',
+        element: <ShowRoom />,
+    },
+    {
+        path: 'showrooms/show-room',
+        element: <ShowRoomMap />,
+    },
+    // service
+    {
+        path: '/service/service-type',
+        element: <ServiceType />,
+    },
+    {
+        path: '/service/adjustment',
+        element: <Adjustment />,
+    },
+    {
+        path: '/service/tarrif',
+        element: <Tarrif />,
+    },
+    // Reports Page
+    // General
+    {
+        path: '/general/expense',
+        element: <ExpenseSummery />,
+    },
+    {
+        path: '/general/sales',
+        element: <SalesSummery />,
+    },
+    // Financial
+    {
+        path: '/financial/balance',
+        element: <BalanceSheet />,
+    },
+    {
+        path: '/financial/ledger',
+        element: <Ledger />,
+    },
+    {
+        path: '/financial/profit',
+        element: <ProfitLoss />,
+    },
+    // Receivable
+    {
+        path: '/receivable/comcusoutstanding',
+        element: <ComCusOutstanding />,
+    },
+    {
+        path: '/receivable/comcuswise',
+        element: <ComCusWise />,
+    },
+    {
+        path: '/receivable/invoicewise',
+        element: <InvoiceWiseSheet />,
+    },
+    {
+        path: '/receivable/payment',
+        element: <PaymentReceived />,
+    },
 
     {
         path: '/pages/knowledge-base',

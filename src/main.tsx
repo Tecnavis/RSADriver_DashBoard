@@ -1,8 +1,8 @@
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import firebase from './config/config';
-import Context  from './context/firebaseContext';
-
+import Context from './context/firebaseContext';
+import { UserProvider } from './context/UserContext';
 // Assuming you're using Firebase from the SDK
 import { FirebaseApp } from 'firebase/app'; // Import the correct type
 
@@ -18,17 +18,19 @@ import store from './store/index';
 interface FirebaseContextType {
     firebase: FirebaseApp;
 }
-const FirebaseContext = React.createContext<FirebaseContextType | null>(null);
+const FirebaseContext = React.createContext<FirebaseContextType | null>(null);
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <React.StrictMode>
-        <Suspense>
-            <Provider store={store}>
-                <Context>
-                    <FirebaseContext.Provider value={{ firebase } as FirebaseContextType}>
-                        <RouterProvider router={router} />
-                    </FirebaseContext.Provider>
-                </Context>
-            </Provider>
-        </Suspense>
+        <UserProvider>
+            <Suspense>
+                <Provider store={store}>
+                    <Context>
+                        <FirebaseContext.Provider value={{ firebase } as FirebaseContextType}>
+                            <RouterProvider router={router} />
+                        </FirebaseContext.Provider>
+                    </Context>
+                </Provider>
+            </Suspense>
+        </UserProvider>
     </React.StrictMode>
 );

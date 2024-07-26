@@ -66,24 +66,53 @@ const Dropoff = () => {
       console.error('Error updating document or uploading photo: ', error);
     }
   };
+// Function to receive location data from Flutter app
+const receiveLocationFromFlutter = (locationJson: string) => {
+  try {
+    const locationData = JSON.parse(locationJson) as { latitude: number; longitude: number };
+    const locationObj: LocationObj = {
+      lat: locationData.latitude,
+      lng: locationData.longitude,
+    };
+    setCurrentLocation(locationObj);
+  } catch (error) {
+    console.error('Failed to parse location data:', error);
+  }
+};
 
-  const fetchCurrentLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          const location = { lat: latitude, lng: longitude };
-          setCurrentLocation(location);
-          console.log('Current Location:', location);
-        },
-        (error) => {
-          console.error('Error fetching current location:', error);
-        }
-      );
-    } else {
-      console.error('Geolocation is not supported by this browser.');
-    }
-  };
+// Attach receiveLocationFromFlutter to the window object
+useEffect(() => {
+  (window as any).receiveLocationFromFlutter = receiveLocationFromFlutter;
+}, []);
+
+// Function to request location from Flutter app
+const requestLocation = () => {
+  if ((window as any).flutter) {
+    (window as any).flutter.postMessage('requestLocation');
+  }
+};
+
+// Automatically request location when component mounts
+useEffect(() => {
+  requestLocation();
+  }, []);
+  // const fetchCurrentLocation = () => {
+  //   if (navigator.geolocation) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       (position) => {
+  //         const { latitude, longitude } = position.coords;
+  //         const location = { lat: latitude, lng: longitude };
+  //         setCurrentLocation(location);
+  //         console.log('Current Location:', location);
+  //       },
+  //       (error) => {
+  //         console.error('Error fetching current location:', error);
+  //       }
+  //     );
+  //   } else {
+  //     console.error('Geolocation is not supported by this browser.');
+  //   }
+  // };
 
   const calculateDistance = (location1, location2) => {
     const toRadians = (degree) => degree * (Math.PI / 180);
@@ -102,9 +131,9 @@ const Dropoff = () => {
     return R * c; // Distance in kilometers
   };
 
-  useEffect(() => {
-    fetchCurrentLocation();
-  }, []);
+  // useEffect(() => {
+  //   fetchCurrentLocation();
+  // }, []);
 
   useEffect(() => {
     const fetchBookingData = async () => {
@@ -134,7 +163,7 @@ const Dropoff = () => {
           const dist = calculateDistance(currentLocation, dropoffLocation);
           setDistance(dist);
 
-          if (dist < 0.5) {
+          if (dist < 1) {
               (async () => {
                   try {
                       await updateDoc(doc(db, 'bookings', id), {

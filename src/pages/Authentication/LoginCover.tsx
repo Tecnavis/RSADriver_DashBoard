@@ -1,107 +1,109 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { getDocs, getFirestore, doc, updateDoc, GeoPoint, query, where, collection, getDoc } from "firebase/firestore";
+import React, { useState, useEffect } from 'react';
+import { useNavigate,Link } from 'react-router-dom';
+import { getDocs, getFirestore, doc, updateDoc, GeoPoint, query, where, collection, getDoc } from 'firebase/firestore';
 import IconLockDots from '../../components/Icon/IconLockDots';
 import IconPhone from '../../components/Icon/IconPhone';
+import { useUserContext } from '../../context/UserContext';
 
 const LoginCover = () => {
-    const navigate = useNavigate();
-    const [phone, setPhone] = useState('');
-    const [password, setPassword] = useState('');
-    const [keepLoggedIn, setKeepLoggedIn] = useState(false);
-    const [currentLocation, setCurrentLocation] = useState(null);
-    const db = getFirestore();
-    const [driverId, setDriverId] = useState('');
-    useEffect(() => {
-        const loggedIn = localStorage.getItem('loggedIn');
+  const navigate = useNavigate();
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [keepLoggedIn, setKeepLoggedIn] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState<any>(null);
+  const db = getFirestore();
+  const { setPhonee } = useUserContext();
+  
+  useEffect(() => {
+    const loggedIn = localStorage.getItem('loggedIn');
 
-        if (loggedIn === 'true') {
-            navigate('/bookings/newbooking');
+    if (loggedIn === 'true') {
+        setPhonee(phone)
+      navigate('/bookings/newbooking');
+    }
+  }, [navigate]);
+
+  const updateDriverLocation = async (driverId: string, location: { latitude: number; longitude: number }) => {
+    try {
+      if (!driverId) {
+        console.error('Error updating driver location: driverId number is missing.');
+        return;
+      }
+
+      const driverRef = doc(db, 'driver', driverId);
+      const driverDoc = await getDoc(driverRef);
+
+      if (driverDoc.exists()) {
+        await updateDoc(driverRef, {
+          currentLocation: new GeoPoint(location.latitude, location.longitude)
+        });
+        console.log('Driver location updated successfully for driverId:', driverId);
+        console.log('Updated location:', location);
+      } else {
+        console.error('Driver document does not exist for driverId:', driverId);
+      }
+    } catch (error) {
+      console.error('Error updating driver location:', error);
+    }
+  };
+
+  const signIn = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      const q = query(collection(db, 'driver'), where('phone', '==', phone), where('password', '==', password));
+      const querySnapshot = await getDocs(q);
+  
+      if (!querySnapshot.empty) {
+        let driverId: string | null = null;
+        querySnapshot.forEach(doc => {
+          driverId = doc.id;
+        });
+        localStorage.setItem('driverId', driverId);
+        localStorage.setItem('password', password);
+        localStorage.setItem('phone', phone);
+        if (keepLoggedIn) {
+          localStorage.setItem('loggedIn', 'true');
         }
-    }, []);
+        navigate(`/bookings/newbooking`);
+        setContextPhone(phone);
 
-    const updateDriverLocation = async (driverId, location) => {
-        try {
-            if (!driverId) {
-                console.error('Error updating driver location: driverId number is missing.');
-                return;
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            const location = { latitude, longitude };
+            // Update current location in the database
+            updateDriverLocation(driverId, location);
+          },
+          (error) => {
+            console.error('Error getting current location:', error);
+          }
+        );
+
+        // Update current location every 5 seconds
+        const intervalId = setInterval(() => {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const { latitude, longitude } = position.coords;
+              const location = { latitude, longitude };
+              // Update current location in the database
+              updateDriverLocation(driverId, location);
+            },
+            (error) => {
+              console.error('Error getting current location:', error);
             }
+          );
+        }, 5000);
 
-            const driverRef = doc(db, 'driver', driverId);
-            const driverDoc = await getDoc(driverRef);
-
-            if (driverDoc.exists()) {
-                await updateDoc(driverRef, {
-                    currentLocation: new GeoPoint(location.latitude, location.longitude)
-                });
-                console.log('Driver location updated successfully for driverId:', driverId);
-                console.log('Updated location:', location);
-            } else {
-                console.error('Driver document does not exist for driverId:', driverId);
-            }
-        } catch (error) {
-            console.error('Error updating driver location:', error);
-        }
-    };
-
-    const signIn = async (e) => {
-        e.preventDefault();
-        try {
-            const q = query(collection(db, 'driver'), where('phone', '==', phone), where('password', '==', password));
-            const querySnapshot = await getDocs(q);
-    
-            if (!querySnapshot.empty) {
-                let driverId = null;
-                querySnapshot.forEach(doc => {
-                    driverId = doc.id;
-                });
-                localStorage.setItem('driverId', driverId);
-                localStorage.setItem('password', password);
-
-                localStorage.setItem('phone', phone);
-                if (keepLoggedIn) {
-                    localStorage.setItem('loggedIn', 'true');
-                }
-                navigate(`/bookings/newbooking`);
-                console.log('Driver ID:', driverId);
-    
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const { latitude, longitude } = position.coords;
-                        const location = { latitude, longitude };
-                        // Update current location in the database
-                        updateDriverLocation(driverId, location);
-                    },
-                    (error) => {
-                        console.error('Error getting current location:', error);
-                    }
-                );
-
-                // Update current location every 5 seconds
-                const intervalId = setInterval(() => {
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            const { latitude, longitude } = position.coords;
-                            const location = { latitude, longitude };
-                            // Update current location in the database
-                            updateDriverLocation(driverId, location);
-                        },
-                        (error) => {
-                            console.error('Error getting current location:', error);
-                        }
-                    );
-                }, 5000);
-
-                // Clear the interval when the component unmounts
-                return () => clearInterval(intervalId);
-            } else {
-                alert('Invalid credentials');
-            }
-        } catch (error) {
-            console.error('Error signing in:', error);
-            alert('An error occurred while signing in. Please try again later.');
-        }
-    };
+        // Clear the interval when the component unmounts
+        return () => clearInterval(intervalId);
+      } else {
+        alert('Invalid credentials');
+      }
+    } catch (error) {
+      console.error('Error signing in:', error);
+      alert('An error occurred while signing in. Please try again later.');
+    }
+  };
     return (
         <div>
             <div className="absolute inset-0">
