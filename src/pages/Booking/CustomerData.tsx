@@ -6,8 +6,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Resizer from 'react-image-file-resizer'; // Import the image resizer library
 
 const CustomerData = () => {
-    const [showModal, setShowModal] = useState(true); // State for controlling modal visibility
-
+    const [showModal, setShowModal] = useState(true); 
     const [customerName, setCustomerName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
@@ -20,7 +19,8 @@ const CustomerData = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { state } = location;
-    const { id } = state || {};
+    const { id,currentLocation } = state || {};
+    console.log("currentLocation",currentLocation)
 
     console.log('T8', id);
     const validateForm = () => {
@@ -149,6 +149,8 @@ const CustomerData = () => {
                 navigate(`/dropoff/${id}`, {
                     state: {
                         id,
+                        currentLocation: currentLocation 
+
                     },
                 });
             } catch (error) {

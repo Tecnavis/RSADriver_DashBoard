@@ -19,7 +19,7 @@ const LoginCover = () => {
 
     if (loggedIn === 'true') {
         setPhonee(phone)
-      navigate('/bookings/newbooking');
+        navigate('/bookings/newbooking', { state: { currentLocation } });
     }
   }, [navigate]);
 
@@ -52,9 +52,8 @@ const LoginCover = () => {
     try {
       const q = query(collection(db, 'driver'), where('phone', '==', phone), where('password', '==', password));
       const querySnapshot = await getDocs(q);
-  
       if (!querySnapshot.empty) {
-        let driverId: string | null = null;
+        let driverId = null;
         querySnapshot.forEach(doc => {
           driverId = doc.id;
         });
@@ -64,38 +63,42 @@ const LoginCover = () => {
         if (keepLoggedIn) {
           localStorage.setItem('loggedIn', 'true');
         }
-        navigate(`/bookings/newbooking`);
-        setContextPhone(phone);
-
+        setPhonee(phone);
+        
         navigator.geolocation.getCurrentPosition(
           (position) => {
             const { latitude, longitude } = position.coords;
             const location = { latitude, longitude };
             // Update current location in the database
             updateDriverLocation(driverId, location);
+            setCurrentLocation(location);
+
+            // Navigate to new booking page with current location state
+            navigate(`/bookings/newbooking`, { state: { currentLocation: location } });
+
+            // Update current location every 5 seconds
+            const intervalId = setInterval(() => {
+              navigator.geolocation.getCurrentPosition(
+                (position) => {
+                  const { latitude, longitude } = position.coords;
+                  const location = { latitude, longitude };
+                  // Update current location in the database
+                  updateDriverLocation(driverId, location);
+                },
+                (error) => {
+                  console.error('Error getting current location:', error);
+                }
+              );
+            }, 5000);
+
+            // Clear the interval when the component unmounts
+            return () => clearInterval(intervalId);
           },
           (error) => {
             console.error('Error getting current location:', error);
           }
         );
 
-        // Update current location every 5 seconds
-        const intervalId = setInterval(() => {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              const { latitude, longitude } = position.coords;
-              const location = { latitude, longitude };
-              // Update current location in the database
-              updateDriverLocation(driverId, location);
-            },
-            (error) => {
-              console.error('Error getting current location:', error);
-            }
-          );
-        }, 5000);
-
-        // Clear the interval when the component unmounts
-        return () => clearInterval(intervalId);
       } else {
         alert('Invalid credentials');
       }
@@ -104,6 +107,58 @@ const LoginCover = () => {
       alert('An error occurred while signing in. Please try again later.');
     }
   };
+  //     if (!querySnapshot.empty) {
+  //       let driverId: string | null = null;
+  //       querySnapshot.forEach(doc => {
+  //         driverId = doc.id;
+  //       });
+  //       localStorage.setItem('driverId', driverId);
+  //       localStorage.setItem('password', password);
+  //       localStorage.setItem('phone', phone);
+  //       if (keepLoggedIn) {
+  //         localStorage.setItem('loggedIn', 'true');
+  //       }
+  //       navigate(`/bookings/newbooking`);
+  //       setContextPhone(phone);
+
+  //       navigator.geolocation.getCurrentPosition(
+  //         (position) => {
+  //           const { latitude, longitude } = position.coords;
+  //           const location = { latitude, longitude };
+  //           // Update current location in the database
+  //           updateDriverLocation(driverId, location);
+            
+  //         },
+  //         (error) => {
+  //           console.error('Error getting current location:', error);
+  //         }
+  //       );
+
+  //       // Update current location every 5 seconds
+  //       const intervalId = setInterval(() => {
+  //         navigator.geolocation.getCurrentPosition(
+  //           (position) => {
+  //             const { latitude, longitude } = position.coords;
+  //             const location = { latitude, longitude };
+  //             // Update current location in the database
+  //             updateDriverLocation(driverId, location);
+  //           },
+  //           (error) => {
+  //             console.error('Error getting current location:', error);
+  //           }
+  //         );
+  //       }, 5000);
+
+  //       // Clear the interval when the component unmounts
+  //       return () => clearInterval(intervalId);
+  //     } else {
+  //       alert('Invalid credentials');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error signing in:', error);
+  //     alert('An error occurred while signing in. Please try again later.');
+  //   }
+  // };
     return (
         <div>
             <div className="absolute inset-0">

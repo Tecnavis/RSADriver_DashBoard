@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getFirestore, collection, getDocs, updateDoc, addDoc, query, where } from 'firebase/firestore';
 import { getDoc, doc } from 'firebase/firestore';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import IconPhone from '../../components/Icon/IconPhone';
 import { useUserContext } from '../../context/UserContext';
 type RecordData = {
@@ -27,69 +27,24 @@ const NewBooking = () => {
     // const phone = localStorage.getItem('phone');
     const password = localStorage.getItem('password'); 
     const {phone} = useUserContext();
-    console.log('driverId', driverId);
-    console.log('phone', phone);
-
-    console.log('password', password);
-
-    console.log('phone', phone);
+    const location = useLocation();
+    const { currentLocation } = location.state || {};
+    console.log("currentLocation",location)
     const [selectedBooking, setSelectedBooking] = useState<RecordData | null>(null);
 
-    const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [recordsData, setRecordsData] = useState<RecordData[]>([]);
     const [driverDetailsMap, setDriverDetailsMap] = useState<{ [key: string]: { totalDriverSalary: number; totalDistance: number } }>({});
     const db = getFirestore();
     const navigate = useNavigate();
     const completedBookings = recordsData.filter((booking) => booking.status === 'Order Completed');
     const nonCompletedBookings = recordsData.filter((booking) => booking.status !== 'Order Completed');
-    const fetchCurrentLocation = () => {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const { latitude, longitude } = position.coords;
-                    const location = { lat: latitude, lng: longitude };
-                    setCurrentLocation(location);
-                    console.log('Current Location:', location);
-                },
-                (error) => {
-                    console.error('Error fetching current location:', error);
-                }
-            );
-        } else {
-            console.error('Geolocation is not supported by this browser.');
-        }
-    };
     
-    useEffect(() => {
-        fetchCurrentLocation();
-    }, []);
 useEffect(()=>{
      if(!phone){
       navigate('/login')
      }
 },[phone,navigate])
-    // const calculateDrivingDistance = (origin, destination) => {
-    //     return new Promise((resolve, reject) => {
-    //         const directionsService = new google.maps.DirectionsService();
-    //         directionsService.route(
-    //             {
-    //                 origin,
-    //                 destination,
-    //                 travelMode: google.maps.TravelMode.DRIVING,
-    //             },
-    //             (response, status) => {
-    //                 if (status === 'OK') {
-    //                     const route = response.routes[0];
-    //                     const distance = route.legs[0].distance.value / 1000; // distance in kilometers
-    //                     resolve(distance);
-    //                 } else {
-    //                     reject(`Directions request failed due to ${status}`);
-    //                 }
-    //             }
-    //         );
-    //     });
-    // };
-
+  
     const fetchDriverDetails = async (driverId, serviceType) => {
         try {
             const driverDoc = await getDoc(doc(db, 'driver', driverId));
@@ -167,6 +122,7 @@ useEffect(()=>{
             setSelectedBooking(booking);
     
             const pickupPlaceName = pickupLocation?.name || null;
+            console.log('Current LocationNew:', currentLocation);
 
             navigate(`/pickup/${id}`, {
                 state: {
@@ -179,6 +135,7 @@ useEffect(()=>{
                     customerName,
                     id,
                     totalSalary,
+                    currentLocation,
                 },
             });
         } catch (error) {
@@ -206,64 +163,7 @@ useEffect(()=>{
         }
     };
 
-    // const calculateDriverSalary = (basicSalary, basicSalaryKM, totalDistance, salaryPerKM) => {
-    //     const numericBasicSalary = parseFloat(basicSalary);
-    //     const numericBasicSalaryKM = parseFloat(basicSalaryKM);
-    //     const numericTotalDistance = parseFloat(totalDistance);
-    //     const numericSalaryPerKM = parseFloat(salaryPerKM);
-
-    //     if (isNaN(numericBasicSalary) || isNaN(numericBasicSalaryKM) || isNaN(numericTotalDistance) || isNaN(numericSalaryPerKM)) {
-    //         console.error('Invalid numeric values for salary calculation');
-    //         return 0;
-    //     }
-
-    //     const excessKm = Math.max(0, numericTotalDistance - numericBasicSalaryKM);
-    //     return numericBasicSalary + excessKm * numericSalaryPerKM;
-    // };
-
-  //   const handleDriverDetails = async (selectedDriverId, serviceType, pickupLocation, dropoffLocation, bookingId) => {
-  //     if (!currentLocation) {
-  //         console.error('Current location not available');
-  //         return;
-  //     }
-  
-  //     try {
-  //         const distanceToPickup = await calculateDrivingDistance(currentLocation, pickupLocation);
-  //         const distancePickupToDropoff = await calculateDrivingDistance(pickupLocation, dropoffLocation);
-  //         const distanceDropoffToCurrent = await calculateDrivingDistance(dropoffLocation, currentLocation);
-  
-  //         console.log("distanceToPickup", distanceToPickup);
-  //         console.log("distancePickupToDropoff", distancePickupToDropoff);
-  //         console.log("distanceDropoffToCurrent", distanceDropoffToCurrent);
-  
-  //         const totalDistance = distanceToPickup + distancePickupToDropoff + distanceDropoffToCurrent;
-  
-  //         const details = await fetchDriverDetails(selectedDriverId, serviceType);
-  //         if (details && details.salaryDetails) {
-  //             const totalDriverSalary = calculateDriverSalary(details.salaryDetails.basicSalary, details.salaryDetails.basicSalaryKM, totalDistance, details.salaryDetails.salaryPerKM);
-  
-  //             // Update the Firestore document with totalDriverSalary
-  //             const bookingDocRef = doc(db, 'bookings', bookingId);
-  //             await updateDoc(bookingDocRef, {
-  //                 totalDriverSalary: totalDriverSalary,
-  //                 totalDistance: totalDistance,
-  //             });
-  
-  //             setDriverDetailsMap((prevState) => ({
-  //                 ...prevState,
-  //                 [bookingId]: {
-  //                     ...details,
-  //                     totalDriverSalary,
-  //                     totalDistance,
-  //                 },
-  //             }));
-  //         } else {
-  //             console.error('Driver details or salary details are missing');
-  //         }
-  //     } catch (error) {
-  //         console.error('Error handling driver details: ', error);
-  //     }
-  // };
+   
   const handlePhoneClick = async (bookingId: string) => {
     try {
         await updateDoc(doc(db, 'bookings', bookingId), {
@@ -361,55 +261,6 @@ onClick={() => handlePhoneClick(booking.id)}
       Payable Amount: {booking.updatedTotalSalary}
     </p>
 
-    {/* <button
-      className="btn btn-info"
-      style={{
-        marginTop: '10px',
-        backgroundColor: '#3498db',
-        color: '#fff',
-        padding: '10px 20px',
-        borderRadius: '5px',
-        border: 'none',
-        cursor: 'pointer',
-        transition: 'background-color 0.3s ease',
-      }}
-      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2980b9')}
-      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3498db')}
-      onClick={() =>
-        handleDriverDetails(
-          booking.selectedDriver,
-          booking.serviceType,
-          booking.pickupLocation,
-          booking.dropoffLocation,
-          booking.id
-        )
-      }
-    >
-      View Driver Salary Details
-    </button> */}
-    {/* {driverDetailsMap[booking.id] && (
-      <div>
-        {driverDetailsMap[booking.id].salaryDetails && (
-          <>
-            <p className="mt-2">Basic Salary: {driverDetailsMap[booking.id].salaryDetails.basicSalary}</p>
-            <p>Salary per KM: {driverDetailsMap[booking.id].salaryDetails.salaryPerKM}</p>
-            <p>Basic Salary KM: {driverDetailsMap[booking.id].salaryDetails.basicSalaryKM}</p>
-            <p>Total Distance: {driverDetailsMap[booking.id].totalDistance}</p>
-
-            <p
-              style={{
-                color: '#c0392b',
-                fontSize: '18px',
-                fontWeight: 'bold',
-                marginTop: '10px',
-              }}
-            >
-              Total Salary: {driverDetailsMap[booking.id].totalDriverSalary.toFixed(2)}
-            </p>
-          </>
-        )}
-      </div>
-    )} */}
 
     <div className="mt-4 flex justify-end">
       <button
@@ -505,56 +356,6 @@ onClick={() => handlePhoneClick(booking.id)}
                   >
                     Payable Amount: {booking.updatedTotalSalary}
                   </p>
-      
-                  {/* <button
-                    className="btn btn-info"
-                    style={{
-                      marginTop: '10px',
-                      backgroundColor: '#3498db',
-                      color: '#fff',
-                      padding: '10px 20px',
-                      borderRadius: '5px',
-                      border: 'none',
-                      cursor: 'pointer',
-                      transition: 'background-color 0.3s ease',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2980b9')}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3498db')}
-                    onClick={() =>
-                      handleDriverDetails(
-                        booking.selectedDriver,
-                        booking.serviceType,
-                        booking.pickupLocation,
-                        booking.dropoffLocation,
-                        booking.id
-                      )
-                    }
-                  >
-                    View Driver Salary Details
-                  </button> */}
-                  {/* {driverDetailsMap[booking.id] && (
-                    <div>
-                      {driverDetailsMap[booking.id].salaryDetails && (
-                        <>
-                          <p className="mt-2">Basic Salary: {driverDetailsMap[booking.id].salaryDetails.basicSalary}</p>
-                          <p>Salary per KM: {driverDetailsMap[booking.id].salaryDetails.salaryPerKM}</p>
-                          <p>Basic Salary KM: {driverDetailsMap[booking.id].salaryDetails.basicSalaryKM}</p>
-                          <p style={{ margin: '5px 0', color: '#7f8c8d' }}>Total Distance: {booking.totalDistance}</p>
-
-                          <p
-                            style={{
-                              color: '#c0392b',
-                              fontSize: '18px',
-                              fontWeight: 'bold',
-                              marginTop: '10px',
-                            }}
-                          >
-                            Total Salary: {driverDetailsMap[booking.id].totalDriverSalary.toFixed(2)}
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  )} */}
       
                   <div className="mt-4 flex justify-end">
                     <button

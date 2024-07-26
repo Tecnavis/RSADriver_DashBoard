@@ -7,10 +7,10 @@ import { getStorage } from 'firebase/storage';
 const Dropoff = () => {
   const location = useLocation();
   const { state } = location;
-  const { id } = state || {};
+  const { id, currentLocation } = state || {};
+  console.log("currentLocation",currentLocation)
   const [showModal, setShowModal] = useState(false);
   const [dropoffLocation, setDropoffLocation] = useState(null);
-  const [currentLocation, setCurrentLocation] = useState(null);
   const [distance, setDistance] = useState(null);
   const [kilometerdrop, setKilometerdrop] = useState('');
   const [photodrop, setPhotodrop] = useState<File | null>(null);
@@ -66,74 +66,36 @@ const Dropoff = () => {
       console.error('Error updating document or uploading photo: ', error);
     }
   };
-// Function to receive location data from Flutter app
-const receiveLocationFromFlutter = (locationJson: string) => {
-  try {
-    const locationData = JSON.parse(locationJson) as { latitude: number; longitude: number };
-    const locationObj: LocationObj = {
-      lat: locationData.latitude,
-      lng: locationData.longitude,
-    };
-    setCurrentLocation(locationObj);
-  } catch (error) {
-    console.error('Failed to parse location data:', error);
-  }
-};
 
-// Attach receiveLocationFromFlutter to the window object
-useEffect(() => {
-  (window as any).receiveLocationFromFlutter = receiveLocationFromFlutter;
-}, []);
+ 
 
-// Function to request location from Flutter app
-const requestLocation = () => {
-  if ((window as any).flutter) {
-    (window as any).flutter.postMessage('requestLocation');
-  }
-};
-
-// Automatically request location when component mounts
-useEffect(() => {
-  requestLocation();
-  }, []);
-  // const fetchCurrentLocation = () => {
-  //   if (navigator.geolocation) {
-  //     navigator.geolocation.getCurrentPosition(
-  //       (position) => {
-  //         const { latitude, longitude } = position.coords;
-  //         const location = { lat: latitude, lng: longitude };
-  //         setCurrentLocation(location);
-  //         console.log('Current Location:', location);
-  //       },
-  //       (error) => {
-  //         console.error('Error fetching current location:', error);
-  //       }
-  //     );
-  //   } else {
-  //     console.error('Geolocation is not supported by this browser.');
-  //   }
-  // };
-
-  const calculateDistance = (location1, location2) => {
-    const toRadians = (degree) => degree * (Math.PI / 180);
+  const calculateDistance = (coord1: { latitude: number, longitude: number }, coord2: { latitude: number, longitude: number }): number => {
+    const toRadians = (degree: number) => degree * (Math.PI / 180);
 
     const R = 6371; // Radius of the Earth in kilometers
-    const dLat = toRadians(location2.lat - location1.lat);
-    const dLng = toRadians(location2.lng - location1.lng);
 
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(toRadians(location1.lat)) * Math.cos(toRadians(location2.lat)) *
-      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const lat1 = toRadians(coord1.latitude);
+    const lon1 = toRadians(coord1.longitude);
+    const lat2 = toRadians(coord2.lat);
+    const lon2 = toRadians(coord2.lng);
+console.log("lat1",lat1)
+console.log("lon1",lon1)
+
+console.log("lat2",lat2)
+
+console.log("lon2",lon2)
+
+    const dLat = lat2 - lat1;
+    const dLon = lon2 - lon1;
+
+    const a = Math.sin(dLat / 2) ** 2 +
+              Math.cos(lat1) * Math.cos(lat2) *
+              Math.sin(dLon / 2) ** 2;
 
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
     return R * c; // Distance in kilometers
-  };
-
-  // useEffect(() => {
-  //   fetchCurrentLocation();
-  // }, []);
+};
 
   useEffect(() => {
     const fetchBookingData = async () => {
@@ -156,14 +118,17 @@ useEffect(() => {
       fetchBookingData();
     }
   }, [id, db]);
-
   useEffect(() => {
     const checkReachedDestination = () => {
-      if (dropoffLocation.lat && currentLocation.lng && dropoffLocation?.lat && dropoffLocation?.lng) {
-          const dist = calculateDistance(currentLocation, dropoffLocation);
-          setDistance(dist);
+        if (
+            currentLocation?.latitude && currentLocation?.longitude &&
+            dropoffLocation?.lat && dropoffLocation?.lng
+        ) {
+            const dist = calculateDistance(currentLocation, dropoffLocation);
+            setDistance(dist);
+  
 
-          if (dist < 1) {
+          if (dist < 2) {
               (async () => {
                   try {
                       await updateDoc(doc(db, 'bookings', id), {
@@ -209,8 +174,8 @@ useEffect(() => {
         <div className="mb-6">
           <p className="text-lg font-medium text-gray-700">Current Location:</p>
           <p className="text-gray-600">
-            Latitude: <span className="font-semibold">{currentLocation.lat}</span>, 
-            Longitude: <span className="font-semibold">{currentLocation.lng}</span>
+            Latitude: <span className="font-semibold">{currentLocation.latitude}</span>, 
+            Longitude: <span className="font-semibold">{currentLocation.longitude}</span>
           </p>
         </div>
       ) : (
