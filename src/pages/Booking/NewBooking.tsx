@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { getFirestore, collection, getDocs, updateDoc, addDoc, query, where } from 'firebase/firestore';
 import { getDoc, doc } from 'firebase/firestore';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
@@ -31,14 +31,15 @@ const NewBooking = () => {
     const { currentLocation } = location.state || {};
     console.log("currentLocation",location)
     const [selectedBooking, setSelectedBooking] = useState<RecordData | null>(null);
+    const [soundPlaying, setSoundPlaying] = useState<boolean>(false);
 
     const [recordsData, setRecordsData] = useState<RecordData[]>([]);
-    const [driverDetailsMap, setDriverDetailsMap] = useState<{ [key: string]: { totalDriverSalary: number; totalDistance: number } }>({});
     const db = getFirestore();
     const navigate = useNavigate();
     const completedBookings = recordsData.filter((booking) => booking.status === 'Order Completed');
     const nonCompletedBookings = recordsData.filter((booking) => booking.status !== 'Order Completed');
-    
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+
 useEffect(()=>{
      if(!phone){
       navigate('/login')
@@ -81,36 +82,50 @@ useEffect(()=>{
     };
     
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const querySnapshot = await getDocs(query(collection(db, 'bookings'), where('selectedDriver', '==', driverId)));
-                const dataWithIndex = querySnapshot.docs.map((doc, index) => ({
-                    index: index + 2000,
-                    ...doc.data(),
-                    id: doc.id,
-                }));
+      const fetchData = async () => {
+          try {
+              const querySnapshot = await getDocs(query(collection(db, 'bookings'), where('selectedDriver', '==', driverId)));
+              const dataWithIndex = querySnapshot.docs.map((doc, index) => ({
+                  index: index + 2000,
+                  ...doc.data(),
+                  id: doc.id,
+              }));
 
-                const filteredData = await Promise.all(
-                    dataWithIndex.map(async (booking) => {
-                        const driverDetails = await fetchDriverDetails(booking.selectedDriver, booking.serviceType);
-                        if (driverDetails && driverDetails.phone === phone && driverDetails.password === password) {
-                            return booking;
-                        } else {
-                            return null;
-                        }
-                    })
-                );
+              const filteredData = await Promise.all(
+                  dataWithIndex.map(async (booking) => {
+                      const driverDetails = await fetchDriverDetails(booking.selectedDriver, booking.serviceType);
+                      if (driverDetails && driverDetails.phone === phone && driverDetails.password === password) {
+                          return booking;
+                      } else {
+                          return null;
+                      }
+                  })
+              );
 
-                const filteredRecordsData = filteredData.filter((booking) => booking !== null);
+              const filteredRecordsData = filteredData.filter((booking) => booking !== null);
 
-                setRecordsData(filteredRecordsData);
-                console.log('first', filteredRecordsData);
-            } catch (error) {
-                console.error('Error fetching data: ', error);
-            }
-        };
-        fetchData();
-    }, [db, phone, password, driverId]);
+              setRecordsData(filteredRecordsData);
+              console.log('first', filteredRecordsData);
+          } catch (error) {
+              console.error('Error fetching data: ', error);
+          }
+      };
+      fetchData();
+  }, [db, phone, password, driverId]);
+  useEffect(() => {
+    if (recordsData.some((booking) => booking.status === 'booking added')) {
+        if (audioRef.current) {
+            audioRef.current.loop = true; // Make sure the audio loops
+            audioRef.current.play();
+        }
+    } else {
+        if (audioRef.current) {
+            audioRef.current.loop = false; // Stop looping
+            audioRef.current.pause(); // Pause the audio
+            audioRef.current.currentTime = 0; // Reset to the beginning
+        }
+    }
+}, [recordsData]);
     const handleOkClick = async (booking) => {
         const { customerName, pickupLocation, totalSalary, id } = booking;
     
@@ -175,6 +190,8 @@ useEffect(()=>{
 };
     return (
         <div>
+                      <audio ref={audioRef} src="/emergency-alarm-with-reverb-29431.mp3" />
+
           <div className="panel mt-6">
             <h5 className="font-semibold text-lg dark:text-white-light mb-5">New Bookings</h5>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 ">
@@ -239,7 +256,13 @@ onClick={() => handlePhoneClick(booking.id)}
       >
         {booking.phoneNumber}
       </a>
-    </p>   
+    </p>  
+    <p style={{ margin: '5px 0', color: '#7f8c8d !important' }}>
+ Vehicle Type: {booking.vehicleType} Wheeler
+</p>
+
+
+
        <p style={{ margin: '5px 0', color: '#7f8c8d' }}>
               Pickup Location: {booking.pickupLocation?.name || 'N/A'}
             </p>
