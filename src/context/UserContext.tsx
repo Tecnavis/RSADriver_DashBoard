@@ -1,21 +1,20 @@
-// src/context/UserContext.tsx
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface UserContextType {
   phone: string | null;
   setPhonee: (phone: string | null) => void;
   logout: () => void;
-  isAuthenticated: boolean; // Add additional values if needed
-  userId: string | null;    // Example of another value
-  setUserId: (id: string | null) => void; // Example setter function
+  isAuthenticated: boolean;
+  driverId: string | null;
+  setDriverId: (id: string | null) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [phone, setPhonee] = useState<string | null>(localStorage.getItem('phone'));
-  const isAuthenticated = phone !== null; // Example of derived state
+  const [driverId, setDriverId] = useState<string | null>(localStorage.getItem('driverId'));
+  const isAuthenticated = phone !== null;
 
   const logout = () => {
     localStorage.removeItem('phone');
@@ -23,10 +22,11 @@ const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     localStorage.removeItem('driverId');
     localStorage.removeItem('password');
     setPhonee(null);
+    setDriverId(null);
   };
 
   return (
-    <UserContext.Provider value={{ phone, setPhonee, logout, isAuthenticated}}>
+    <UserContext.Provider value={{ phone, setPhonee, isAuthenticated, driverId, setDriverId, logout }}>
       {children}
     </UserContext.Provider>
   );

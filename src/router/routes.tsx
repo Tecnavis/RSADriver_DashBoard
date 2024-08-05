@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react';
 import UserAdd from '../pages/Users/UserAdd';
 import { Navigate } from 'react-router-dom';
 // import Booking from '../pages/Booking/Booking';
+import PrivateRoute from './PrivateRoute';
 import NewBooking from '../pages/Booking/NewBooking';
 // import PrivateRoute from './PrivateRoute';
 import CancelledBooking from '../pages/Booking/CancelledBooking';
@@ -157,16 +158,20 @@ const routes = [
     //       </Suspense>
     //     ),
     //   },
-
+   
     {
         path: '/',
-        element: <LoginCover />,
+        element:<LoginCover />,
         layout: 'blank',
     },
 
     {
         path: '/index',
-        element: <Index />,
+         element: (
+            <PrivateRoute>
+                <Index />
+            </PrivateRoute>
+        ),
     },
 
     // analytics page
@@ -507,7 +512,11 @@ const routes = [
 
     {
         path: '/bookings/newbooking',
-        element: <NewBooking />,
+        element: (
+            <PrivateRoute>
+                <NewBooking />
+            </PrivateRoute>
+        ),
     },
     {
         path: '/pickup/:id',

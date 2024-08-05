@@ -12,8 +12,8 @@ const LoginCover = () => {
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<any>(null);
   const db = getFirestore();
-  const { setPhonee } = useUserContext();
-  
+  const { setPhonee ,setDriverId ,isAuthenticated} = useUserContext();
+   console.log(isAuthenticated)
   useEffect(() => {
     const loggedIn = localStorage.getItem('loggedIn');
 
@@ -23,6 +23,12 @@ const LoginCover = () => {
     }
   }, [navigate]);
 
+ useEffect(()=>{
+  if(isAuthenticated){
+    navigate('/bookings/newbooking',{replace:true})
+  } 
+
+ },[isAuthenticated])
   const updateDriverLocation = async (driverId: string, location: { latitude: number; longitude: number }) => {
     try {
       if (!driverId) {
@@ -64,6 +70,7 @@ const LoginCover = () => {
           localStorage.setItem('loggedIn', 'true');
         }
         setPhonee(phone);
+        setDriverId(driverId)
         
         navigator.geolocation.getCurrentPosition(
           (position) => {

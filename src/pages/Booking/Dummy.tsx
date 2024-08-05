@@ -4,7 +4,6 @@ import { getDoc, doc } from 'firebase/firestore';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import IconPhone from '../../components/Icon/IconPhone';
 import { useUserContext } from '../../context/UserContext';
-import Dummy from './Dummy';
 type RecordData = {
     index: number;
     customerName: string;
@@ -22,8 +21,7 @@ type RecordData = {
     serviceType: string;
     selectedDriver: string;
 };
-
-const NewBooking = () => {
+const Dummy = () => {
     const driverId = localStorage.getItem('driverId');
     // const phone = localStorage.getItem('phone');
     const password = localStorage.getItem('password'); 
@@ -33,8 +31,6 @@ const NewBooking = () => {
     const location = useLocation();
     const { currentLocation } = location.state || {};
     console.log("currentLocation",location)
-    const [selectedBooking, setSelectedBooking] = useState<RecordData | null>(null);
-    const [soundPlaying, setSoundPlaying] = useState<boolean>(false);
 
     const [recordsData, setRecordsData] = useState<RecordData[]>([]);
     const db = getFirestore();
@@ -42,35 +38,42 @@ const NewBooking = () => {
     const completedBookings = recordsData.filter((booking) => booking.status === 'Order Completed');
     const nonCompletedBookings = recordsData.filter((booking) => booking.status !== 'Order Completed');
     const audioRef = useRef<HTMLAudioElement | null>(null);
-
-
-    const fetchDriverDetails = async (driverId, serviceType) => {
+    const fetchDriversWithPassword = async (password: string) => {
         try {
-            const driverDoc = await getDoc(doc(db, 'driver', driverId));
-            if (driverDoc.exists()) {
-                const driverData = driverDoc.data();
-                if (driverData.phone === phone && driverData.password === password) {
-                    if (driverData.selectedServices.includes(serviceType)) {
-                        const salaryDetails = {
-                            basicSalary: driverData.basicSalaries[serviceType],
-                            salaryPerKM: driverData.salaryPerKm[serviceType],
-                            basicSalaryKM: driverData.basicSalaryKm[serviceType],
-                        };
+            const driversRef = collection(db, 'driver');
+            const q = query(driversRef, where('password', '==', password));
+            const querySnapshot = await getDocs(q);
+            return querySnapshot.docs.map(doc => doc.id);
+        } catch (error) {
+            console.error('Error fetching drivers:', error);
+            return [];
+        }
+    };
 
-                        return {
-                            ...driverData,
-                            salaryDetails,
-                        };
-                    } else {
-                        console.log('Service type not supported by the driver');
-                        return { ...driverData, salaryDetails: null };
-                    }
-                } else {
-                    console.log('Phone and/or password do not match');
-                    return null;
-                }
+    const fetchBookingsForDrivers = async (driverIds: string[]) => {
+        try {
+            const bookingsRef = collection(db, 'bookings');
+            const q = query(bookingsRef, where('selectedDriver', 'in', driverIds));
+            const querySnapshot = await getDocs(q);
+            return querySnapshot.docs.map((doc, index) => ({
+                index: index + 1,
+                ...doc.data(),
+                id: doc.id
+            }));
+        } catch (error) {
+            console.error('Error fetching bookings:', error);
+            return [];
+        }
+    };
+
+    const fetchDriverDetails = async (driverId: string) => {
+        try {
+            const driverRef = doc(db, 'driver', driverId);
+            const driverSnapshot = await getDoc(driverRef);
+            if (driverSnapshot.exists()) {
+                return driverSnapshot.data();
             } else {
-                console.log('No such driver found!');
+                console.error('No such driver!');
                 return null;
             }
         } catch (error) {
@@ -78,136 +81,76 @@ const NewBooking = () => {
             return null;
         }
     };
-    
-    useEffect(() => {
-      const fetchData = async () => {
-          try {
-              const querySnapshot = await getDocs(query(collection(db, 'bookings'), where('selectedDriver', '==', driverId)));
-              const dataWithIndex = querySnapshot.docs.map((doc, index) => ({
-                  index: index + 2000,
-                  ...doc.data(),
-                  id: doc.id,
-              }));
 
-              const filteredData = await Promise.all(
-                  dataWithIndex.map(async (booking) => {
-                      const driverDetails = await fetchDriverDetails(booking.selectedDriver, booking.serviceType);
-                      if (driverDetails && driverDetails.phone === phone && driverDetails.password === password) {
-                          return booking;
-                      } else {
-                          return null;
-                      }
-                  })
-              );
-
-              const filteredRecordsData = filteredData.filter((booking) => booking !== null);
-
-              setRecordsData(filteredRecordsData);
-              console.log('first', filteredRecordsData);
-          } catch (error) {
-              console.error('Error fetching data: ', error);
-          }
-      };
-      fetchData();
-  }, [db, phone, password, driverId]);
-  useEffect(() => {
-    if (recordsData.some((booking) => booking.status === 'booking added')) {
-        if (audioRef.current) {
-            audioRef.current.loop = true; // Make sure the audio loops
-            audioRef.current.play();
-        }
-    } else {
-        if (audioRef.current) {
-            audioRef.current.loop = false; // Stop looping
-            audioRef.current.pause(); // Pause the audio
-            audioRef.current.currentTime = 0; // Reset to the beginning
-        }
-    }
-}, [recordsData]);
-const handleOkClick = async (booking) => {
-  const { customerName, pickupLocation, totalSalary, id } = booking;
-  const driverId = localStorage.getItem('driverId');
-  const password = localStorage.getItem('password');
-
-  try {
-      // Fetch driver details based on the driverId
-      const driverDetails = await fetchDriverDetails(driverId, booking.serviceType);
-      
-      if (!driverDetails) {
-          alert('Driver details could not be retrieved. Please check.');
-          return;
-      }
-
-      // Update the booking with driver information
-      await updateDoc(doc(db, 'bookings', id), {
-          status: 'Order Received',
-          selectedDriver: driverId,
-         // Make sure to securely handle passwords
-          driver: driverDetails.driverName, // Add other driver details as needed
-          phone: driverDetails.phone,
-          // Add any additional driver details you want to save
-      });
-
-      setSelectedBooking(booking);
-
-      const pickupPlaceName = pickupLocation?.name || null;
-      console.log('Current LocationNew:', currentLocation);
-
-      navigate(`/pickup/${id}`, {
-          state: {
-              pickupLocation: {
-                  placename: pickupPlaceName,
-                  lat: pickupLocation?.lat,
-                  lng: pickupLocation?.lng,
-              },
-              customerName,
-              id,
-              totalSalary,
-              currentLocation,
-          },
-      });
-  } catch (error) {
-      console.error('Error handling booking operation: ', error);
-  }
-};
-
-    const handleRejectClick = async (id: string) => {
+    const updateBookingWithDriver = async (bookingId: string, driverDetails: any) => {
         try {
-            const confirmed = window.confirm('Are you sure you want to reject this booking?');
-            if (confirmed) {
-                await updateDoc(doc(db, 'bookings', id), {
-                    status: 'Rejected',
-                });
-                // Optionally refresh the bookings list or show a notification
-                alert('Booking rejected.');
-                setRecordsData((prev) => prev.filter((booking) => booking.id !== id)); // remove from UI
-            } else {
-                // Handle rejection cancellation if needed
-                console.log('Booking rejection cancelled.');
-            }
+            const bookingRef = doc(db, 'bookings', bookingId);
+            await updateDoc(bookingRef, {
+                selectedDriver: driverId,
+                ...driverDetails
+            });
+            console.log('Booking updated with driver details.');
         } catch (error) {
-            console.error('Error rejecting booking: ', error);
+            console.error('Error updating booking:', error);
         }
     };
 
-   
-  const handlePhoneClick = async (bookingId: string) => {
-    try {
-        await updateDoc(doc(db, 'bookings', bookingId), {
-            status: 'called to customer',
-        });
-    } catch (error) {
-        console.error('Error updating booking status: ', error);
-    }
-};
-    return (
-        <div>
-                      <audio ref={audioRef} src="/emergency-alarm-with-reverb-29431.mp3" />
+    const handleOkClick = async (booking) => {
+        const driverId = localStorage.getItem('driverId');
+        const password = localStorage.getItem('password'); 
+    
+        if (!driverId || !password) {
+            console.error('Driver ID or password not found in localStorage');
+            return;
+        }
+    
+        // Fetch the driver data from Firestore based on the driverId
+        const driverRef = doc(db, 'driver', driverId);
+        const driverSnap = await getDoc(driverRef);
+    
+        if (driverSnap.exists()) {
+            const driverData = driverSnap.data();
+    
+            // Update booking or driver data as needed
+            try {
+                // Example of updating the booking with the driver's details
+                await updateDoc(driverRef, {
+                    // Update the fields you need
+                    password: password, // if you want to update the password
+                    selectedDriver: driverId,
+                    totalSalary: booking.totalSalary,
+                    // Add any other fields you want to update
+                });
+    
+                console.log('Driver data updated successfully');
+                // Optionally, navigate or update the UI as needed
+            } catch (error) {
+                console.error('Error updating driver data:', error);
+            }
+        } else {
+            console.error('Driver not found in Firestore');
+        }
+    };
 
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const driverIds = await fetchDriversWithPassword('dummy');
+                if (driverIds.length > 0) {
+                    const bookings = await fetchBookingsForDrivers(driverIds);
+                    setRecordsData(bookings);
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+        fetchData();
+    }, [db]);
+
+    return (
+       
           <div className="panel mt-6">
-            <h5 className="font-semibold text-lg dark:text-white-light mb-5">New Bookings</h5>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 ">
-           
          {nonCompletedBookings.map((booking) => (
   <div
     key={booking.id}
@@ -349,7 +292,6 @@ onClick={() => handlePhoneClick(booking.id)}
             </div>
       
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 mt-6">
-              <h5 className="font-semibold text-lg dark:text-white-light mb-5">Completed Bookings</h5>
               {completedBookings.map((booking) => (
                 <div
                   key={booking.id}
@@ -441,27 +383,10 @@ onClick={() => handlePhoneClick(booking.id)}
                 </div>
               ))}
             </div>
-            <Link to={`/bookings/closedbooking?phone=${phone}`} className="link">
-              <button
-                className="btn mt-6"
-                style={{
-                  padding: '10px 20px',
-                  backgroundColor: '#3498db',
-                  color: '#fff',
-                  borderRadius: '5px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.3s ease',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2980b9')}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3498db')}
-              >
-                View Status
-              </button>
-            </Link>
+           
           </div>
-        </div>
+      
       );
-};
+}
 
-export default NewBooking;
+export default Dummy
